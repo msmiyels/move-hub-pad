@@ -1,5 +1,11 @@
 # Move Hub Pad
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-79B143.svg)](LICENSE)
+[![Web Bluetooth](https://img.shields.io/badge/Web-Bluetooth-7FB2E5.svg)](https://developer.mozilla.org/docs/Web/API/Web_Bluetooth_API)
+[![No build step](https://img.shields.io/badge/build-none-2A313B.svg)](#move-hub-pad)
+[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-79B143.svg)](https://<github-name>.github.io/move-hub-pad/)
+![Technic Move Hub](https://img.shields.io/badge/Move%20Hub-42176%20%7C%2042214%20%7C%2042239-E8B02A.svg)
+
 Drive the LEGO® Technic Move Hub with a game controller, from a browser tab.
 
 The hub in sets **42176** (Porsche GT4 e-Performance), **42214** (Lamborghini Revuelto) and
@@ -134,12 +140,12 @@ frame sent and received, and decodes the hub's error replies.
 
 Built on community reverse-engineering of this hub:
 
-- [sT-aK/legoCon](https://github.com/sT-aK/legoCon) — browser control of the Move Hub, port map
-- [marian001/movehub-88019](https://github.com/marian001/movehub-88019) — Python driver, crash map, session semantics
-- [DanieleBenedettelli/TechnicMoveHub](https://github.com/DanieleBenedettelli/TechnicMoveHub) — bonding flow and first frame documentation
-- [maxswinkels/42176-controller](https://github.com/maxswinkels/42176-controller) — drive stream and flags
-- [Pybricks](https://github.com/pybricks/pybricks-micropython) — reference LWP3 device implementation
-- [LEGO BLE Wireless Protocol](https://lego.github.io/lego-ble-wireless-protocol-docs/) — the specification
+- [sT-aK/legoCon](https://github.com/sT-aK/legoCon) - browser control of the Move Hub, port map
+- [marian001/movehub-88019](https://github.com/marian001/movehub-88019) - Python driver, crash map, session semantics
+- [DanieleBenedettelli/TechnicMoveHub](https://github.com/DanieleBenedettelli/TechnicMoveHub) - bonding flow and first frame documentation
+- [maxswinkels/42176-controller](https://github.com/maxswinkels/42176-controller) - drive stream and flags
+- [Pybricks](https://github.com/pybricks/pybricks-micropython) - reference LWP3 device implementation
+- [LEGO BLE Wireless Protocol](https://lego.github.io/lego-ble-wireless-protocol-docs/) - the specification
 
 ## Licence
 
