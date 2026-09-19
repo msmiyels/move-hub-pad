@@ -1,12 +1,21 @@
 # OS related
 .DS_Store
 
+# Build
+node_modules/
+dist/
+
 # Software, apps and editor files
 .idea/
 .obsidian/
+.github/
+.impeccable
 
 # AI related
 .claude/
 .copilot/
 .opencode/
 
+# Later
+DESIGN.md
+PRODUCT.md
