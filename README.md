@@ -1,12 +1,17 @@
 # Move Hub Pad
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-79B143.svg)](LICENSE)
-[![Web Bluetooth](https://img.shields.io/badge/Web-Bluetooth-7FB2E5.svg)](https://developer.mozilla.org/docs/Web/API/Web_Bluetooth_API)
-[![No build step](https://img.shields.io/badge/build-none-2A313B.svg)](#move-hub-pad)
-[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-79B143.svg)](https://<github-name>.github.io/move-hub-pad/)
-![Technic Move Hub](https://img.shields.io/badge/Move%20Hub-42176%20%7C%2042214%20%7C%2042239-E8B02A.svg)
+<!-- badges -->
+<p align="center">Drive the LEGO® Technic Move Hub with a game controller, from a browser tab.</p>
 
-Drive the LEGO® Technic Move Hub with a game controller, from a browser tab.
+<p align="center">
+  <img src="https://img.shields.io/badge/JavaScript-Language?style=flat&label=Language&color=F7DF1E" alt="Language" />
+  <img src="https://img.shields.io/badge/Web%20Bluetooth-Browser%20API?style=flat&label=Platform&color=7FB2E5" alt="Web Bluetooth" />
+  <img src="https://img.shields.io/badge/Build-none?style=flat&label=Build&color=2A313B" alt="No build step" />
+  <img src="https://img.shields.io/website?url=https%3A%2F%2Fmsmiyels.github.io%2Fmove-hub-pad%2F&up_color=79B143&down_color=DC3B3B&logo=github&label=GitHub%20Pages&up_message=Online&down_message=Offline" alt="GitHub Pages status" />
+  <img src="https://img.shields.io/badge/License-MIT-0056CC?style=flat" alt="MIT License" />
+</p>
+
+<!-- /badges -->
 
 The hub in sets **42176** (Porsche GT4 e-Performance), **42214** (Lamborghini Revuelto) and
 **42239** (Batmobile Tumbler) only talks to LEGO's CONTROL+ app. Its firmware is password
@@ -149,5 +154,9 @@ Built on community reverse-engineering of this hub:
 
 ## Licence
 
-MIT. LEGO® is a trademark of the LEGO Group, which does not sponsor, authorise or endorse this
+MIT. 
+
+## Disclaimer
+
+LEGO® is a trademark of the LEGO Group, which does not sponsor, authorise or endorse this
 project.
