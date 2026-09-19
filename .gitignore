@@ -1,0 +1,12 @@
+# OS related
+.DS_Store
+
+# Software, apps and editor files
+.idea/
+.obsidian/
+
+# AI related
+.claude/
+.copilot/
+.opencode/
+

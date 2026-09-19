@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Move Hub Pad — drive LEGO Technic 42214 with a DualSense</title>
+<meta name="description" content="Drive the LEGO Technic Move Hub (sets 42176, 42214, 42239) with a PlayStation DualSense or any other gamepad, straight from the browser over Web Bluetooth.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --ink:#0E1013;
+  --panel:#161A20;
+  --panel-2:#1D222A;
+  --line:#2A313B;
+  --text:#E8EBEF;
+  --muted:#8A93A0;
+  --go:#79B143;
+  --warn:#E8B02A;
+  --stop:#DC3B3B;
+  --link:#7FB2E5;
+  --radius:10px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--text);
+  font-family:"Barlow Semi Condensed","Roboto Condensed",system-ui,-apple-system,sans-serif;
+  font-size:17px;
+  line-height:1.45;
+  -webkit-text-size-adjust:100%;
+  -webkit-user-select:none;
+  user-select:none;
+  overscroll-behavior:none;
+}
+.wrap{max-width:760px;margin:0 auto;padding:12px 14px 40px}
+
+/* ---------- status strip ---------- */
+.strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.mark{font-weight:700;font-size:20px;letter-spacing:.02em;margin-right:auto}
+.mark span{color:var(--muted);font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:3px 11px;font-size:14px;color:var(--muted);white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:#4A525E;display:block}
+.pill.on{color:var(--text)}
+.pill.on i{background:var(--go)}
+.pill.warn i{background:var(--warn)}
+.pill.bad i{background:var(--stop)}
+
+/* ---------- cluster (hero) ---------- */
+.cluster{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 18px}
+.state{font-size:19px;font-weight:600;margin:0 0 14px;display:flex;align-items:baseline;gap:8px}
+.state small{font-size:15px;font-weight:400;color:var(--muted)}
+.state.lock{color:var(--warn)}
+.state.live{color:var(--go)}
+.state.err{color:var(--stop)}
+
+.steer{position:relative;height:30px;background:var(--panel-2);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.steer .fill{position:absolute;top:0;bottom:0;left:50%;width:0;background:var(--link);opacity:.85}
+.steer .tick{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--line)}
+.meter{position:relative;height:22px;background:var(--panel-2);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.meter .fill{position:absolute;top:0;bottom:0;left:0;width:0;background:var(--go)}
+.meter.brake .fill{background:var(--stop)}
+.rowlabel{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:3px}
+.rowlabel b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---------- actions ---------- */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+button{font:inherit;font-weight:600;color:var(--text);background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--radius);padding:12px 14px;cursor:pointer;touch-action:manipulation}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+button[disabled]{opacity:.45;cursor:default}
+button.primary{background:var(--go);border-color:var(--go);color:#0D1408}
+button.stop{background:var(--stop);border-color:var(--stop);color:#fff;font-size:21px;letter-spacing:.08em}
+button.ghost{background:transparent}
+
+/* ---------- panels ---------- */
+details{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-top:10px}
+summary{padding:12px 14px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px}
+details[open] summary::after{content:"–"}
+.body{padding:0 14px 14px;border-top:1px solid var(--line);padding-top:12px}
+.field{display:flex;align-items:center;gap:12px;margin:10px 0}
+.field label{flex:1;font-size:16px}
+.field label em{display:block;font-style:normal;font-size:13px;color:var(--muted);line-height:1.3}
+.field output{min-width:52px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{flex:0 0 150px;accent-color:var(--go)}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--go)}
+select{font:inherit;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btnrow button{padding:9px 12px;font-size:15px;font-weight:500}
+.note{font-size:14px;color:var(--muted);margin:8px 0 0}
+.note a{color:var(--link)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-weight:500}
+td.num{font-variant-numeric:tabular-nums;color:var(--muted)}
+#log{background:#0A0C0F;border:1px solid var(--line);border-radius:6px;padding:10px;height:220px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5;white-space:pre-wrap;
+  color:#BFC7D2;-webkit-user-select:text;user-select:text}
+#log .t{color:#5C6672}
+#log .bad{color:#F0827F}
+#log .good{color:#9ED26A}
+#rawInput{background:#0A0C0F;border:1px solid var(--line);border-radius:6px;padding:10px;margin:8px 0 0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5;color:#BFC7D2;
+  white-space:pre-wrap;-webkit-user-select:text;user-select:text}
+#rawInput[hidden]{display:none}
+@media (min-width:620px){ .actions{grid-template-columns:repeat(4,1fr)} }
+@media (prefers-reduced-motion:no-preference){ .meter .fill,.steer .fill{transition:width .06s linear,left .06s linear} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="strip">
+  <div class="mark">Move Hub Pad <span>· 42176 / 42214 / 42239</span></div>
+  <span class="pill" id="pillHub"><i></i><span>Hub offline</span></span>
+  <span class="pill" id="pillPad"><i></i><span>No controller</span></span>
+  <span class="pill" id="pillBat"><i></i><span>Battery —</span></span>
+</header>
+
+<section class="cluster">
+  <p class="state" id="stateLine">Not connected <small id="stateHint">Pair your controller in iOS Bluetooth settings first.</small></p>
+
+  <div class="rowlabel"><span>Steering</span><b id="valSteer">0</b></div>
+  <div class="steer"><div class="fill" id="barSteer"></div><div class="tick"></div></div>
+
+  <div class="rowlabel"><span>Throttle</span><b id="valThrottle">0</b></div>
+  <div class="meter"><div class="fill" id="barThrottle"></div></div>
+
+  <div class="rowlabel"><span>Reverse</span><b id="valBrake">0</b></div>
+  <div class="meter brake"><div class="fill" id="barBrake"></div></div>
+</section>
+
+<div class="actions">
+  <button class="primary" id="btnConnect">Connect hub</button>
+  <button class="stop" id="btnStop">STOP</button>
+  <button class="ghost" id="btnLights">Lights off</button>
+  <button class="ghost" id="btnDisconnect" disabled>Disconnect</button>
+</div>
+
+<details id="panelPad">
+  <summary>Controller</summary>
+  <div class="body">
+    <p class="note" id="padInfo">Press any button on the controller once — browsers only report a gamepad after its first input.</p>
+    <div class="field"><label>Controller in use<em>Some mice and keyboards announce themselves as gamepads too</em></label>
+      <select id="padPick"><option value="">Choose automatically</option></select></div>
+    <div class="field"><label>Throttle and reverse on<em>Triggers are finer, the stick lets one thumb do everything</em></label>
+      <select id="setThrottleMode">
+        <option value="triggers">R2 and L2</option>
+        <option value="stick">Right stick, up and down</option>
+        <option value="both">Both at once</option>
+      </select></div>
+    <div class="field"><label>Push stick up to go forward</label><input type="checkbox" id="setStickInvert"></div>
+    <div class="field"><label>Deadzone<em>Ignore small stick movement around centre</em></label>
+      <input type="range" id="setDeadzone" min="0" max="30" step="1"><output id="outDeadzone"></output></div>
+    <div class="field"><label>Steering curve<em>Higher values make the centre less twitchy</em></label>
+      <input type="range" id="setExpo" min="0" max="80" step="5"><output id="outExpo"></output></div>
+    <p class="note">Default mapping: R2 accelerates, L2 reverses, left stick steers, Square brakes, Circle toggles the lights, Options stops. If an input does nothing, teach it here.</p>
+    <div class="btnrow">
+      <button id="learnThrottle">Teach throttle</button>
+      <button id="learnBrake">Teach reverse</button>
+      <button id="learnDrive">Teach drive stick</button>
+      <button id="learnSteer">Teach steering</button>
+      <button id="learnHandbrake">Teach brake button</button>
+      <button id="learnLights">Teach lights button</button>
+      <button id="learnStop">Teach stop button</button>
+      <button id="resetMap">Reset mapping</button>
+    </div>
+    <div class="field"><label>Show raw controller values<em>Live axis and button readout, for checking what actually moves</em></label>
+      <input type="checkbox" id="setShowRaw"></div>
+    <pre id="rawInput" hidden></pre>
+    <p class="note" id="mapInfo"></p>
+  </div>
+</details>
+
+<details id="panelDrive">
+  <summary>Driving</summary>
+  <div class="body">
+    <div class="field"><label>Power limit<em>Start low. 100% is quick enough to hurt the gears on a hard stop.</em></label>
+      <input type="range" id="setMaxPower" min="20" max="100" step="5"><output id="outMaxPower"></output></div>
+    <div class="field"><label>Turn assist<em>Slows the inner wheel while steering, so the car actually turns</em></label>
+      <input type="range" id="setTurnAssist" min="0" max="80" step="5"><output id="outTurnAssist"></output></div>
+    <div class="field"><label>Steering force<em>Torque against the mechanical end stops</em></label>
+      <input type="range" id="setSteerTorque" min="20" max="100" step="5"><output id="outSteerTorque"></output></div>
+    <div class="field"><label>Ease off when held<em>Halves the force 0.4 s after the steering stops moving</em></label>
+      <input type="checkbox" id="setSteerHold"></div>
+    <div class="field"><label>Reverse drive direction</label><input type="checkbox" id="setInvertDrive"></div>
+    <div class="field"><label>Reverse steering direction</label><input type="checkbox" id="setInvertSteer"></div>
+    <div class="field"><label>Swap left and right wheel<em>Use if the car turns the wrong way into corners</em></label>
+      <input type="checkbox" id="setSwapSides"></div>
+    <div class="field"><label>Light brightness</label>
+      <input type="range" id="setLightBrightness" min="10" max="100" step="5"><output id="outLightBrightness"></output></div>
+    <div class="field"><label>Hub button colour</label>
+      <select id="setHubColour">
+        <option value="-1">Leave alone</option><option value="0">Off</option><option value="1">Pink</option>
+        <option value="3">Blue</option><option value="6">Green</option><option value="7">Yellow</option>
+        <option value="8">Orange</option><option value="9">Red</option><option value="10">White</option>
+      </select></div>
+  </div>
+</details>
+
+<details id="panelPorts">
+  <summary>Ports</summary>
+  <div class="body">
+    <p class="note">The hub reports its built-in motors on connect. On the Porsche and the Lamborghini these are ports 50 and 51 (wheels), 52 (steering) and 53 (headlights) — the two wheel motors are built facing each other, so one of them runs inverted.</p>
+    <table><thead><tr><th>Port</th><th>Device</th><th>Role</th><th>Invert</th><th></th></tr></thead>
+    <tbody id="portRows"><tr><td colspan="5" class="num">Nothing detected yet.</td></tr></tbody></table>
+    <div class="btnrow">
+      <button id="btnKnownLayout">Apply known 42176 / 42214 layout</button>
+      <button id="btnClearPorts">Clear assignments</button>
+    </div>
+  </div>
+</details>
+
+<details id="panelDiag">
+  <summary>Diagnostics</summary>
+  <div class="body">
+    <div class="field"><label>Wait for write acknowledgement<em>Turn off if commands are accepted but nothing moves</em></label>
+      <input type="checkbox" id="setWithResponse"></div>
+    <div class="field"><label>Reconnect automatically</label><input type="checkbox" id="setAutoReconnect"></div>
+    <div class="field"><label>Log every packet as hex</label><input type="checkbox" id="setHexLog"></div>
+    <div class="btnrow">
+      <button id="btnHubInfo">Request hub info</button>
+      <button id="btnCopyLog">Copy log</button>
+      <button id="btnClearLog">Clear log</button>
+    </div>
+    <p class="note" id="txStats">Sent 0 · failed 0</p>
+  </div>
+</details>
+
+<details id="panelLog" open>
+  <summary>Log</summary>
+  <div class="body"><div id="log"></div></div>
+</details>
+
+<p class="note">Keyboard also works for testing on a desktop: W / S drive, A / D steer, B brakes, L toggles the lights, Space stops.
+Not affiliated with the LEGO Group. LEGO® is a trademark of the LEGO Group.</p>
+
+</div>
+
+<script>
+'use strict';
+
+/* ------------------------------------------------------------------ *
+ * LEGO Wireless Protocol v3 — constants
+ * ------------------------------------------------------------------ */
+const SERVICE_UUID = '00001623-1212-efde-1623-785feabcd123';
+const CHAR_UUID    = '00001624-1212-efde-1623-785feabcd123';
+
+const DEVICE_NAMES = {
+  0x0014:'Voltage', 0x0015:'Current', 0x0017:'Hub light',
+  0x0039:'Accelerometer', 0x003a:'Gyro', 0x003b:'Tilt', 0x003c:'Temperature',
+  0x0056:'Drive motor', 0x0057:'Steering motor', 0x0058:'Headlights', 0x0059:'Drive VM'
+};
+/* Only these device types ever receive a write. Writing to the internal
+   sensor ports is known to lock the hub up until it is power cycled. */
+const WRITABLE_TYPES = new Set([0x0017, 0x0056, 0x0057, 0x0058]);
+const ROLES = ['none','drive','steer','lights','hublight'];
+
+const KNOWN_LAYOUT = {           // verified on 42176, identical hub in 42214 / 42239
+  50:{role:'drive', invert:true},
+  51:{role:'drive', invert:false},
+  52:{role:'steer', invert:false},
+  53:{role:'lights',invert:false},
+  63:{role:'hublight',invert:false}
+};
+const HEADLIGHT_MASK = 0x36;     // the four body lights, leaving out LEDs 1 and 4
+const BRAKE = 127;               // motor power 127 = brake, 0 = coast
+
+const ERROR_CODES = {
+  0x01:'ACK', 0x02:'MACK', 0x03:'buffer overflow', 0x04:'timeout',
+  0x05:'command not recognised', 0x06:'invalid parameter (wrong port or unsupported command)',
+  0x07:'overcurrent', 0x08:'internal error'
+};
+
+/* ------------------------------------------------------------------ *
+ * Settings
+ * ------------------------------------------------------------------ */
+const STORE_KEY = 'movehub-pad.v1';
+const DEFAULTS = {
+  maxPower:60, turnAssist:45, steerTorque:55, steerHold:true,
+  deadzone:8, expo:35,
+  invertDrive:false, invertSteer:false, swapSides:false,
+  throttleMode:'triggers', stickInvert:true,
+  lightBrightness:100, hubColour:-1,
+  withResponse:true, autoReconnect:true, hexLog:false, padId:'', showRaw:false,
+  map:{
+    throttle:{kind:'button', index:7, rest:0, span:1},
+    brake:   {kind:'button', index:6, rest:0, span:1},
+    drive:   {kind:'axis',   index:3, rest:0, span:1},
+    steer:   {kind:'axis',   index:0, rest:0, span:1},
+    handbrake:{kind:'button', index:2},
+    lights:  {kind:'button', index:1},
+    stop:    {kind:'button', index:9}
+  },
+  ports:{}
+};
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return structuredClone(DEFAULTS);
+    const saved = JSON.parse(raw);
+    const merged = Object.assign(structuredClone(DEFAULTS), saved);
+    merged.map = Object.assign(structuredClone(DEFAULTS.map), saved.map || {});
+    merged.ports = saved.ports || {};
+    return merged;
+  }catch(err){ return structuredClone(DEFAULTS); }
+}
+function saveSettings(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(err){ /* private mode */ }
+}
+const S = loadSettings();
+
+/* ------------------------------------------------------------------ *
+ * Log
+ * ------------------------------------------------------------------ */
+const logEl = document.getElementById('log');
+const logLines = [];
+function log(text, kind){
+  const stamp = new Date().toTimeString().slice(0,8);
+  logLines.push(stamp + '  ' + text);
+  if(logLines.length > 400) logLines.shift();
+  const row = document.createElement('div');
+  if(kind) row.className = kind;
+  const t = document.createElement('span');
+  t.className = 't'; t.textContent = stamp + '  ';
+  row.append(t, document.createTextNode(text));
+  logEl.append(row);
+  while(logEl.childElementCount > 400) logEl.firstElementChild.remove();
+  logEl.scrollTop = logEl.scrollHeight;
+}
+const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2,'0')).join(' ');
+
+/* ------------------------------------------------------------------ *
+ * Write queue
+ *
+ * One GATT write may be in flight at a time, otherwise the browser
+ * throws "GATT operation already in progress". Commands are keyed, so a
+ * newer value for the same port replaces a queued older one instead of
+ * piling up behind it, and each key is rate limited to stay inside the
+ * BLE connection interval.
+ * ------------------------------------------------------------------ */
+const tx = {
+  char:null, pending:new Map(), last:new Map(), running:false, timer:0,
+  sent:0, failed:0, canWriteWithoutResponse:false,
+
+  attach(characteristic){
+    this.char = characteristic;
+    this.canWriteWithoutResponse = !!characteristic.properties.writeWithoutResponse;
+    this.pending.clear(); this.last.clear();
+  },
+  detach(){ this.char = null; this.pending.clear(); clearTimeout(this.timer); },
+
+  send(key, data, opts){
+    if(!this.char) return;
+    const o = opts || {};
+    this.pending.set(key, {data, rate:o.rate == null ? 35 : o.rate, urgent:!!o.urgent});
+    this.pump();
+  },
+
+  async pump(){
+    if(this.running || !this.char) return;
+    this.running = true;
+    try{
+      while(this.pending.size && this.char){
+        const now = performance.now();
+        let key = null, wait = Infinity;
+        for(const [k, item] of this.pending){
+          const due = item.urgent ? 0 : (this.last.get(k) || 0) + item.rate - now;
+          if(due <= 0){ key = k; break; }
+          wait = Math.min(wait, due);
+        }
+        if(key === null){
+          clearTimeout(this.timer);
+          this.timer = setTimeout(() => this.pump(), Math.max(4, wait));
+          break;
+        }
+        const item = this.pending.get(key);
+        this.pending.delete(key);
+        this.last.set(key, now);
+        await this.write(item.data);
+      }
+    } finally {
+      this.running = false;
+    }
+  },
+
+  async write(data){
+    const characteristic = this.char;
+    if(!characteristic) return;
+    if(S.hexLog) log('TX  ' + hex(data));
+    try{
+      if(S.withResponse || !this.canWriteWithoutResponse) await characteristic.writeValue(data);
+      else await characteristic.writeValueWithoutResponse(data);
+      this.sent++;
+    }catch(err){
+      this.failed++;
+      const message = String(err && err.message || err);
+      if(/disconnect/i.test(message)){ this.detach(); onLinkLost('write failed: ' + message); }
+      else log('Write failed: ' + message, 'bad');
+    }
+    updateTxStats();
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ * Frame builders
+ * ------------------------------------------------------------------ */
+const frame = {
+  motorPower:(port, power) => new Uint8Array([0x08,0x00,0x81,port,0x11,0x51,0x00, power & 0xff]),
+  headlights:(port, mask, brightness) => new Uint8Array([0x09,0x00,0x81,port,0x11,0x51,0x00, mask, brightness]),
+  hubLight:(port, colour) => new Uint8Array([0x08,0x00,0x81,port,0x11,0x51,0x00, colour]),
+  hubProperty:(property, operation) => new Uint8Array([0x05,0x00,0x01, property, operation]),
+  hubAction:(action) => new Uint8Array([0x04,0x00,0x02, action])
+};
+
+/* ------------------------------------------------------------------ *
+ * Hub connection
+ * ------------------------------------------------------------------ */
+const hub = {
+  device:null, server:null, connected:false, sendOnly:false,
+  ports:new Map(), battery:null, manualDisconnect:false, scanStage:0, reconnects:0
+};
+
+async function connectHub(){
+  if(!navigator.bluetooth){
+    log('This browser cannot do Web Bluetooth. On iPhone and iPad use Bluefy, on a computer use Chrome or Edge.', 'bad');
+    setState('No Bluetooth support', 'Open this page in Bluefy (iOS) or Chrome / Edge.', 'err');
+    return;
+  }
+  const strategies = [
+    {label:'service filter', options:{filters:[{services:[SERVICE_UUID]}]}},
+    {label:'name filter',    options:{filters:[{namePrefix:'Technic'},{namePrefix:'LEGO'},{namePrefix:'Move'}], optionalServices:[SERVICE_UUID]}},
+    {label:'all devices',    options:{acceptAllDevices:true, optionalServices:[SERVICE_UUID]}}
+  ];
+  const strategy = strategies[Math.min(hub.scanStage, strategies.length - 1)];
+  log('Looking for the hub (' + strategy.label + '). Press the green button on the hub so it blinks.');
+  let device;
+  try{
+    device = await navigator.bluetooth.requestDevice(strategy.options);
+  }catch(err){
+    hub.scanStage = Math.min(hub.scanStage + 1, strategies.length - 1);
+    log('No device picked (' + (err && err.name || 'error') + '). Press Connect again to search a different way.', 'bad');
+    return;
+  }
+  hub.scanStage = 0;
+  hub.device = device;
+  hub.manualDisconnect = false;
+  device.addEventListener('gattserverdisconnected', () => onLinkLost('hub closed the connection'));
+  await openLink(device);
+}
+
+async function openLink(device){
+  setState('Connecting…', device.name || 'hub');
+  for(let attempt = 1; attempt <= 4; attempt++){
+    try{
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SERVICE_UUID);
+      const characteristic = await service.getCharacteristic(CHAR_UUID);
+      hub.server = server;
+      tx.attach(characteristic);
+      hub.sendOnly = true;
+      try{
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', onNotification);
+        hub.sendOnly = false;
+      }catch(err){
+        log('Notifications unavailable — running send-only. Assign the ports by hand.', 'bad');
+      }
+      hub.connected = true;
+      hub.reconnects = 0;
+      safety.lock('connected');
+      tx.send('info-type', frame.hubProperty(0x0b, 0x05), {urgent:true});
+      tx.send('info-fw',   frame.hubProperty(0x03, 0x05), {urgent:true});
+      tx.send('battery',   frame.hubProperty(0x06, 0x02), {urgent:true});
+      applyHubColour();
+      log('Connected to ' + (device.name || 'hub') + (hub.sendOnly ? ' (send-only)' : ''), 'good');
+      log('Nothing is sent to the motors until you touch the controller.');
+      refreshUI();
+      return;
+    }catch(err){
+      log('Connection attempt ' + attempt + ' failed: ' + (err && err.message || err), 'bad');
+      if(attempt === 4){
+        setState('Could not connect', 'Power cycle the hub, close the LEGO app, try again.', 'err');
+        return;
+      }
+      await sleep(400 * attempt);
+    }
+  }
+}
+
+function onLinkLost(reason){
+  if(!hub.connected) return;
+  hub.connected = false;
+  hub.ports.clear();
+  tx.detach();
+  safety.lock('disconnected');
+  lights.on = false;
+  lastSent.clear();
+  log('Connection lost — ' + reason, 'bad');
+  refreshUI();
+  renderPorts();
+  if(S.autoReconnect && !hub.manualDisconnect && hub.device && hub.reconnects < 5){
+    hub.reconnects++;
+    log('Reconnecting (' + hub.reconnects + '/5)…');
+    setTimeout(() => { if(!hub.connected) openLink(hub.device); }, 800 * hub.reconnects);
+  }
+}
+
+async function disconnectHub(){
+  hub.manualDisconnect = true;
+  if(hub.connected){
+    stopEverything('disconnecting');
+    await sleep(120);
+    tx.send('bye', frame.hubAction(0x02), {urgent:true});
+    await sleep(150);
+  }
+  tx.detach();
+  try{ if(hub.server && hub.server.connected) hub.server.disconnect(); }catch(err){ /* already gone */ }
+  hub.connected = false;
+  hub.ports.clear();
+  refreshUI();
+  renderPorts();
+  log('Disconnected.');
+}
+
+/* ------------------------------------------------------------------ *
+ * Incoming messages
+ * ------------------------------------------------------------------ */
+function onNotification(event){
+  const data = new Uint8Array(event.target.value.buffer);
+  if(S.hexLog) log('RX  ' + hex(data));
+  switch(data[2]){
+    case 0x01: onHubProperty(data); break;
+    case 0x04: onPortAttached(data); break;
+    case 0x05: onHubError(data); break;
+    default: break;
+  }
+}
+
+function onHubProperty(data){
+  const property = data[3];
+  if(property === 0x06){
+    hub.battery = data[5];
+    refreshUI();
+  }else if(property === 0x0b){
+    const id = data[5];
+    log('Hub type 0x' + id.toString(16) + (id === 0x84 ? ' (Technic Move Hub)' : ''));
+  }else if(property === 0x03){
+    log('Firmware ' + hex(data.slice(5)));
+  }
+}
+
+function onPortAttached(data){
+  const port = data[3];
+  const event = data[4];
+  if(event === 0x00){
+    hub.ports.delete(port);
+    renderPorts();
+    return;
+  }
+  const type = data[5] | (data[6] << 8);
+  hub.ports.set(port, {type});
+  if(!S.ports[port]){
+    const known = KNOWN_LAYOUT[port];
+    if(known && DEVICE_NAMES[type]) S.ports[port] = {role:known.role, invert:known.invert};
+    else if(type === 0x0056) S.ports[port] = {role:'drive', invert:false};
+    else if(type === 0x0057) S.ports[port] = {role:'steer', invert:false};
+    else if(type === 0x0058) S.ports[port] = {role:'lights', invert:false};
+    else if(type === 0x0017) S.ports[port] = {role:'hublight', invert:false};
+    saveSettings();
+  }
+  renderPorts();
+}
+
+function onHubError(data){
+  const command = data[3], code = data[4];
+  log('Hub rejected command 0x' + command.toString(16) + ': ' + (ERROR_CODES[code] || ('code 0x' + code.toString(16))), 'bad');
+}
+
+/* ------------------------------------------------------------------ *
+ * Port helpers
+ * ------------------------------------------------------------------ */
+function portsWithRole(role){
+  const found = [];
+  for(const port of Object.keys(S.ports).map(Number).sort((a,b) => a - b)){
+    if(S.ports[port] && S.ports[port].role === role) found.push(port);
+  }
+  return found;
+}
+function mayWrite(port){
+  const detected = hub.ports.get(port);
+  if(!detected) return hub.sendOnly;               // send-only mode trusts the manual assignment
+  return WRITABLE_TYPES.has(detected.type);
+}
+function sendMotor(port, power, opts){
+  if(!mayWrite(port)) return;
+  tx.send('p' + port, frame.motorPower(port, clampPower(power)), opts);
+}
+function clampPower(power){
+  if(power === BRAKE) return BRAKE;
+  return clamp(Math.round(power), -100, 100);
+}
+
+/* ------------------------------------------------------------------ *
+ * Driving
+ * ------------------------------------------------------------------ */
+const lastSent = new Map();
+const lights = {on:false};
+let steerLastValue = 0, steerLastChange = 0;
+
+function sendIfChanged(port, power, opts){
+  const value = clampPower(power);
+  if(lastSent.get(port) === value) return;
+  lastSent.set(port, value);
+  sendMotor(port, value, opts);
+}
+
+function drive(input){
+  const drivePorts = portsWithRole('drive');
+  const steerPorts = portsWithRole('steer');
+
+  const command = clamp(input.throttle - input.brake, -1, 1) * (S.invertDrive ? -1 : 1);
+  const steer = clamp(input.steer, -1, 1) * (S.invertSteer ? -1 : 1);
+
+  if(input.brakeHold){
+    for(const port of drivePorts) sendIfChanged(port, BRAKE);
+  }else{
+    let sideA = command * S.maxPower;
+    let sideB = sideA;
+    const inner = 1 - (S.turnAssist / 100) * Math.abs(steer);
+    if(steer > 0) sideB *= inner; else if(steer < 0) sideA *= inner;
+    if(S.swapSides){ const swap = sideA; sideA = sideB; sideB = swap; }
+
+    drivePorts.forEach((port, index) => {
+      const value = (index === 0 ? sideA : sideB) * (S.ports[port].invert ? -1 : 1);
+      sendIfChanged(port, value);
+    });
+  }
+
+  const now = performance.now();
+  if(Math.abs(steer - steerLastValue) > 0.04){ steerLastValue = steer; steerLastChange = now; }
+  let torque = S.steerTorque;
+  if(S.steerHold && now - steerLastChange > 400) torque *= 0.5;
+  for(const port of steerPorts){
+    sendIfChanged(port, steer * torque * (S.ports[port].invert ? -1 : 1));
+  }
+}
+
+function setLights(on){
+  lights.on = on;
+  const brightness = on ? S.lightBrightness : 0;
+  for(const port of portsWithRole('lights')){
+    if(!mayWrite(port)) continue;
+    tx.send('l' + port, frame.headlights(port, HEADLIGHT_MASK, brightness), {urgent:true});
+  }
+  document.getElementById('btnLights').textContent = on ? 'Lights on' : 'Lights off';
+}
+
+function applyHubColour(){
+  if(S.hubColour < 0) return;
+  for(const port of portsWithRole('hublight')){
+    if(!mayWrite(port)) continue;
+    tx.send('h' + port, frame.hubLight(port, S.hubColour), {urgent:true});
+  }
+}
+
+function stopEverything(reason){
+  for(const port of portsWithRole('drive')){
+    lastSent.set(port, BRAKE);
+    sendMotor(port, BRAKE, {urgent:true});
+  }
+  for(const port of portsWithRole('steer')){
+    lastSent.set(port, 0);
+    sendMotor(port, 0, {urgent:true});
+  }
+  setTimeout(() => {
+    for(const port of portsWithRole('drive')){
+      lastSent.set(port, 0);
+      sendMotor(port, 0, {urgent:true});
+    }
+  }, 400);
+  safety.lock(reason || 'stopped');
+}
+
+/* ------------------------------------------------------------------ *
+ * Safety lock — no output until every control sits at rest
+ * ------------------------------------------------------------------ */
+const safety = {
+  locked:true, reason:'not connected',
+  lock(reason){ this.locked = true; this.reason = reason; },
+  check(input){
+    if(!this.locked) return false;
+    const atRest = input.throttle < 0.05 && input.brake < 0.05 && Math.abs(input.steer) < 0.1;
+    if(atRest && hub.connected && portsWithRole('drive').length){
+      this.locked = false;
+      if(this.reason !== 'window lost focus' && this.reason !== 'page hidden'){
+        log('Controls released — ready to drive.', 'good');
+      }
+    }
+    return this.locked;
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ * Gamepad and keyboard input
+ * ------------------------------------------------------------------ */
+const keys = new Set();
+let learning = null;
+
+function listGamepads(){
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  return Array.from(pads).filter(pad => pad && pad.connected);
+}
+function looksLikeGamepad(pad){
+  return pad.mapping === 'standard' || (pad.axes.length >= 2 && pad.buttons.length >= 8);
+}
+function currentGamepad(){
+  const pads = listGamepads();
+  if(!pads.length) return null;
+  if(S.padId){
+    const chosen = pads.find(pad => pad.id === S.padId);
+    if(chosen) return chosen;
+  }
+  return pads.find(pad => pad.mapping === 'standard') || pads.find(looksLikeGamepad) || pads[0];
+}
+
+function readBinding(pad, binding){
+  if(!pad || !binding) return 0;
+  if(binding.kind === 'axis') return pad.axes[binding.index] || 0;
+  const button = pad.buttons[binding.index];
+  if(!button) return 0;
+  return typeof button === 'object' ? button.value : button;
+}
+function readUnipolar(pad, binding){
+  const raw = readBinding(pad, binding);
+  const span = binding.span || 1;
+  return clamp((raw - (binding.rest || 0)) / span, 0, 1);
+}
+function readBipolar(pad, binding){
+  const raw = readBinding(pad, binding);
+  const span = binding.span || 1;
+  return clamp((raw - (binding.rest || 0)) / span, -1, 1);
+}
+function pressed(pad, binding){
+  if(!pad || !binding) return false;
+  const button = pad.buttons[binding.index];
+  return !!(button && (typeof button === 'object' ? button.pressed : button > 0.5));
+}
+
+function shapeAxis(value){
+  const dead = S.deadzone / 100;
+  const magnitude = Math.abs(value);
+  if(magnitude < dead) return 0;
+  const scaled = (magnitude - dead) / (1 - dead);
+  const expo = S.expo / 100;
+  const curved = (1 - expo) * scaled + expo * scaled * scaled * scaled;
+  return Math.sign(value) * clamp(curved, 0, 1);
+}
+
+function readInput(pad){
+  let throttle = 0, brake = 0;
+  const useStick = S.throttleMode === 'stick' || S.throttleMode === 'both';
+  const useTriggers = S.throttleMode === 'triggers' || S.throttleMode === 'both';
+  let value = 0;
+  if(useStick){
+    value = shapeAxis(readBipolar(pad, S.map.drive)) * (S.stickInvert ? -1 : 1);
+  }
+  if(useTriggers){
+    const triggers = readUnipolar(pad, S.map.throttle) - readUnipolar(pad, S.map.brake);
+    if(Math.abs(triggers) > Math.abs(value)) value = triggers;
+  }
+  throttle = Math.max(value, 0);
+  brake = Math.max(-value, 0);
+  let steer = shapeAxis(readBipolar(pad, S.map.steer));
+  const brakeHold = pressed(pad, S.map.handbrake) || keys.has('KeyB');
+  if(keys.has('KeyW')) throttle = Math.max(throttle, 1);
+  if(keys.has('KeyS')) brake = Math.max(brake, 1);
+  if(keys.has('KeyA')) steer = -1;
+  if(keys.has('KeyD')) steer = 1;
+  return {throttle, brake, steer, brakeHold};
+}
+
+/* --- teaching an input ------------------------------------------- */
+function startLearning(target, label){
+  const pad = currentGamepad();
+  if(!pad){ log('No controller detected — press a button on it first.', 'bad'); return; }
+  const isButtonOnly = (target === 'lights' || target === 'stop' || target === 'handbrake');
+  learning = {
+    target, label, isButtonOnly, until: performance.now() + 3000,
+    axes: pad.axes.map(v => ({rest:v, min:v, max:v})),
+    buttons: pad.buttons.map(b => ({rest:valueOf(b), min:valueOf(b), max:valueOf(b)}))
+  };
+  log('Teaching ' + label + ': move it fully for three seconds.');
+  setState('Teaching ' + label, 'Move it all the way, then release.', 'lock');
+}
+const valueOf = b => (typeof b === 'object' ? b.value : b);
+
+function stepLearning(pad){
+  if(!learning || !pad) return;
+  pad.axes.forEach((value, i) => {
+    const slot = learning.axes[i];
+    if(!slot) return;
+    slot.min = Math.min(slot.min, value);
+    slot.max = Math.max(slot.max, value);
+  });
+  pad.buttons.forEach((button, i) => {
+    const slot = learning.buttons[i];
+    if(!slot) return;
+    const value = valueOf(button);
+    slot.min = Math.min(slot.min, value);
+    slot.max = Math.max(slot.max, value);
+  });
+  if(performance.now() < learning.until) return;
+
+  let best = null;
+  if(!learning.isButtonOnly){
+    learning.axes.forEach((slot, i) => {
+      const range = slot.max - slot.min;
+      if(!best || range > best.range) best = {kind:'axis', index:i, range, slot};
+    });
+  }
+  learning.buttons.forEach((slot, i) => {
+    const range = slot.max - slot.min;
+    if(!best || range > best.range) best = {kind:'button', index:i, range, slot};
+  });
+
+  const target = learning.target, label = learning.label;
+  learning = null;
+
+  if(!best || best.range < 0.3){
+    log('Nothing moved far enough — mapping for ' + label + ' left unchanged.', 'bad');
+    refreshUI();
+    return;
+  }
+  if(target === 'lights' || target === 'stop' || target === 'handbrake'){
+    S.map[target] = {kind:'button', index:best.index};
+    log('Mapped ' + label + ' to button ' + best.index, 'good');
+  }else if(target === 'steer' || target === 'drive'){
+    const centre = (best.slot.max + best.slot.min) / 2;
+    S.map[target] = {kind:best.kind, index:best.index, rest:best.slot.rest, span:Math.max(best.slot.max - centre, 0.2)};
+    log('Mapped ' + label + ' to ' + best.kind + ' ' + best.index, 'good');
+  }else{
+    S.map[target] = {kind:best.kind, index:best.index, rest:best.slot.rest, span:Math.max(best.range, 0.2)};
+    log('Mapped ' + label + ' to ' + best.kind + ' ' + best.index, 'good');
+  }
+  saveSettings();
+  describeMapping();
+  refreshUI();
+}
+
+/* ------------------------------------------------------------------ *
+ * Main loop
+ * ------------------------------------------------------------------ */
+let previousLightsButton = false, previousStopButton = false;
+
+function loop(){
+  requestAnimationFrame(loop);
+  const pad = currentGamepad();
+  updatePadPill(pad);
+
+  if(learning){ stepLearning(pad); return; }
+
+  const input = readInput(pad);
+  showTelemetry(input);
+  if(S.showRaw) renderRaw(pad, input);
+
+  if(pad){
+    const lightsDown = pressed(pad, S.map.lights);
+    if(lightsDown && !previousLightsButton && hub.connected) setLights(!lights.on);
+    previousLightsButton = lightsDown;
+
+    const stopDown = pressed(pad, S.map.stop);
+    if(stopDown && !previousStopButton) emergencyStop();
+    previousStopButton = stopDown;
+  }
+
+  if(!hub.connected) return;
+  if(safety.check(input)){ showState(input); return; }
+  drive(input);
+  showState(input);
+}
+
+function emergencyStop(){
+  if(!hub.connected) return;
+  stopEverything('stopped');
+  log('Emergency stop.', 'bad');
+}
+
+/* ------------------------------------------------------------------ *
+ * UI
+ * ------------------------------------------------------------------ */
+const $ = id => document.getElementById(id);
+
+function showTelemetry(input){
+  const steerPercent = Math.round(input.steer * 100);
+  $('valSteer').textContent = steerPercent;
+  const bar = $('barSteer');
+  bar.style.width = Math.abs(steerPercent / 2) + '%';
+  bar.style.left = (steerPercent >= 0 ? 50 : 50 + steerPercent / 2) + '%';
+  $('valThrottle').textContent = Math.round(input.throttle * 100);
+  $('barThrottle').style.width = (input.throttle * 100) + '%';
+  $('valBrake').textContent = Math.round(input.brake * 100);
+  $('barBrake').style.width = (input.brake * 100) + '%';
+}
+
+let rawNextUpdate = 0;
+function renderRaw(pad, input){
+  const now = performance.now();
+  if(now < rawNextUpdate) return;
+  rawNextUpdate = now + 100;
+  const box = $('rawInput');
+  if(!pad){ box.textContent = 'No controller in use.'; return; }
+  const axes = pad.axes.map((value, index) => 'axis ' + index + ': ' + value.toFixed(2)).join('   ');
+  const active = pad.buttons
+    .map((button, index) => ({index, value: typeof button === 'object' ? button.value : button}))
+    .filter(entry => entry.value > 0.05)
+    .map(entry => 'button ' + entry.index + ': ' + entry.value.toFixed(2)).join('   ');
+  box.textContent =
+    pad.id + '\n' +
+    'mapping: ' + (pad.mapping || 'non-standard') + '   drive source: ' + S.throttleMode +
+    '   drive binding: ' + S.map.drive.kind + ' ' + S.map.drive.index + '\n' +
+    axes + '\n' +
+    (active || 'no button pressed') + '\n' +
+    'throttle ' + input.throttle.toFixed(2) +
+    '   reverse ' + input.brake.toFixed(2) +
+    '   steer ' + input.steer.toFixed(2) +
+    '   brake ' + (input.brakeHold ? 'held' : 'off');
+}
+
+function showState(input){
+  if(safety.locked){
+    const hint = portsWithRole('drive').length
+      ? 'Release the triggers and centre the stick.'
+      : 'No drive ports assigned yet — open Ports.';
+    setState('Safety lock', hint, 'lock');
+  }else if(input.brakeHold){
+    setState('Braking', 'Drive motors held.', 'err');
+  }else{
+    const moving = Math.abs(input.throttle - input.brake) > 0.02;
+    setState(moving ? 'Driving' : 'Ready', hub.device && hub.device.name ? hub.device.name : '', 'live');
+  }
+}
+function setState(text, hint, kind){
+  const line = $('stateLine');
+  line.className = 'state' + (kind ? ' ' + kind : '');
+  line.firstChild.textContent = text + ' ';
+  $('stateHint').textContent = hint || '';
+}
+
+let padLabelShown = '', padListShown = '';
+function updatePadPill(pad){
+  const pads = listGamepads();
+  const signature = pads.map(entry => entry.id).join('|');
+  if(signature !== padListShown){
+    padListShown = signature;
+    renderPadOptions(pads);
+  }
+  const label = pad ? padName(pad) : 'No controller';
+  if(label === padLabelShown) return;
+  padLabelShown = label;
+  const pill = $('pillPad');
+  pill.className = 'pill ' + (pad ? 'on' : 'warn');
+  pill.querySelector('span').textContent = label;
+}
+
+function renderPadOptions(pads){
+  const select = $('padPick');
+  select.textContent = '';
+  const auto = document.createElement('option');
+  auto.value = ''; auto.textContent = 'Choose automatically';
+  select.append(auto);
+  for(const pad of pads){
+    const option = document.createElement('option');
+    option.value = pad.id;
+    option.textContent = padName(pad) + (pad.mapping === 'standard' ? '' : ' (non-standard)');
+    select.append(option);
+  }
+  select.value = pads.some(pad => pad.id === S.padId) ? S.padId : '';
+}
+function padName(pad){
+  const id = pad.id || 'Gamepad';
+  if(/dualsense|054c/i.test(id)) return 'DualSense';
+  if(/xbox|045e/i.test(id)) return 'Xbox pad';
+  return id.length > 22 ? id.slice(0,22) + '…' : id;
+}
+
+function refreshUI(){
+  const pill = $('pillHub');
+  pill.className = 'pill ' + (hub.connected ? 'on' : 'bad');
+  pill.querySelector('span').textContent = hub.connected
+    ? (hub.sendOnly ? 'Hub (send-only)' : 'Hub connected')
+    : 'Hub offline';
+
+  const battery = $('pillBat');
+  battery.className = 'pill' + (hub.battery == null ? '' : (hub.battery < 20 ? ' bad' : ' on'));
+  battery.querySelector('span').textContent = hub.battery == null ? 'Battery —' : 'Battery ' + hub.battery + '%';
+
+  $('btnConnect').disabled = hub.connected;
+  $('btnConnect').textContent = hub.connected ? 'Connected' : 'Connect hub';
+  $('btnDisconnect').disabled = !hub.connected;
+  if(!hub.connected) setState('Not connected', 'Press the green hub button until it blinks, then connect.');
+}
+
+function updateTxStats(){
+  $('txStats').textContent = 'Sent ' + tx.sent + ' · failed ' + tx.failed;
+}
+
+function describeMapping(){
+  const describe = (binding) => binding ? binding.kind + ' ' + binding.index : '—';
+  const triggers = 'Throttle: ' + describe(S.map.throttle) + ' · Reverse: ' + describe(S.map.brake);
+  const stick = 'Drive: ' + describe(S.map.drive);
+  const drive = S.throttleMode === 'stick' ? stick
+    : S.throttleMode === 'both' ? stick + ' · ' + triggers
+    : triggers;
+  $('mapInfo').textContent =
+    drive +
+    ' · Steering: ' + describe(S.map.steer) +
+    ' · Brake: button ' + S.map.handbrake.index +
+    ' · Lights: button ' + S.map.lights.index +
+    ' · Stop: button ' + S.map.stop.index;
+}
+
+function renderPorts(){
+  const body = $('portRows');
+  body.textContent = '';
+  const ports = new Set([...hub.ports.keys(), ...Object.keys(S.ports).map(Number)]);
+  if(!ports.size){
+    const row = body.insertRow();
+    const cell = row.insertCell();
+    cell.colSpan = 5; cell.className = 'num';
+    cell.textContent = 'Nothing detected yet.';
+    return;
+  }
+  for(const port of [...ports].sort((a,b) => a - b)){
+    const detected = hub.ports.get(port);
+    const assigned = S.ports[port] || {role:'none', invert:false};
+    const row = body.insertRow();
+
+    row.insertCell().textContent = port;
+    const type = row.insertCell();
+    type.className = 'num';
+    type.textContent = detected ? (DEVICE_NAMES[detected.type] || ('type 0x' + detected.type.toString(16))) : 'not reported';
+
+    const roleCell = row.insertCell();
+    const select = document.createElement('select');
+    for(const role of ROLES){
+      const option = document.createElement('option');
+      option.value = role; option.textContent = role;
+      if(role === assigned.role) option.selected = true;
+      select.append(option);
+    }
+    select.addEventListener('change', () => {
+      S.ports[port] = {role:select.value, invert:assigned.invert};
+      lastSent.delete(port);
+      saveSettings();
+    });
+    roleCell.append(select);
+
+    const invertCell = row.insertCell();
+    const invert = document.createElement('input');
+    invert.type = 'checkbox';
+    invert.checked = !!assigned.invert;
+    invert.addEventListener('change', () => {
+      S.ports[port] = {role:S.ports[port] ? S.ports[port].role : 'none', invert:invert.checked};
+      lastSent.delete(port);
+      saveSettings();
+    });
+    invertCell.append(invert);
+
+    const testCell = row.insertCell();
+    const test = document.createElement('button');
+    test.textContent = 'Test';
+    test.addEventListener('click', () => testPort(port));
+    testCell.append(test);
+  }
+}
+
+async function testPort(port){
+  if(!hub.connected){ log('Connect the hub first.', 'bad'); return; }
+  if(!mayWrite(port)){ log('Port ' + port + ' is not a motor or light — not writing to it.', 'bad'); return; }
+  log('Testing port ' + port + ' at 40% for 0.6 s.');
+  sendMotor(port, 40, {urgent:true});
+  await sleep(600);
+  sendMotor(port, 0, {urgent:true});
+  lastSent.delete(port);
+}
+
+/* ------------------------------------------------------------------ *
+ * Settings wiring
+ * ------------------------------------------------------------------ */
+function bindRange(id, key, suffix, onChange){
+  const input = $(id), output = $(id.replace('set','out'));
+  input.value = S[key];
+  output.textContent = S[key] + (suffix || '');
+  input.addEventListener('input', () => {
+    S[key] = Number(input.value);
+    output.textContent = S[key] + (suffix || '');
+    saveSettings();
+    if(onChange) onChange();
+  });
+}
+function bindCheck(id, key, onChange){
+  const input = $(id);
+  input.checked = !!S[key];
+  input.addEventListener('change', () => {
+    S[key] = input.checked;
+    saveSettings();
+    if(onChange) onChange();
+  });
+}
+
+bindRange('setMaxPower','maxPower','%');
+bindRange('setTurnAssist','turnAssist','%');
+bindRange('setSteerTorque','steerTorque','%');
+bindRange('setDeadzone','deadzone','%');
+bindRange('setExpo','expo','%');
+bindRange('setLightBrightness','lightBrightness','%', () => { if(lights.on) setLights(true); });
+bindCheck('setSteerHold','steerHold');
+bindCheck('setInvertDrive','invertDrive');
+bindCheck('setInvertSteer','invertSteer');
+bindCheck('setSwapSides','swapSides');
+bindCheck('setWithResponse','withResponse');
+bindCheck('setAutoReconnect','autoReconnect');
+bindCheck('setHexLog','hexLog');
+
+const hubColour = $('setHubColour');
+hubColour.value = String(S.hubColour);
+hubColour.addEventListener('change', () => { S.hubColour = Number(hubColour.value); saveSettings(); applyHubColour(); });
+
+$('btnConnect').addEventListener('click', connectHub);
+$('btnDisconnect').addEventListener('click', disconnectHub);
+$('btnStop').addEventListener('click', emergencyStop);
+$('btnLights').addEventListener('click', () => { if(hub.connected) setLights(!lights.on); });
+$('btnHubInfo').addEventListener('click', () => {
+  if(!hub.connected){ log('Connect the hub first.', 'bad'); return; }
+  tx.send('info-type', frame.hubProperty(0x0b, 0x05), {urgent:true});
+  tx.send('info-fw', frame.hubProperty(0x03, 0x05), {urgent:true});
+  tx.send('info-bat', frame.hubProperty(0x06, 0x05), {urgent:true});
+  log('Asked the hub for type, firmware and battery.');
+});
+$('btnClearLog').addEventListener('click', () => { logEl.textContent = ''; logLines.length = 0; });
+$('btnCopyLog').addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText(logLines.join('\n')); log('Log copied.'); }
+  catch(err){ log('Clipboard blocked — select the log text manually.', 'bad'); }
+});
+$('btnKnownLayout').addEventListener('click', () => {
+  S.ports = structuredClone(KNOWN_LAYOUT);
+  saveSettings(); renderPorts(); lastSent.clear();
+  log('Applied the known 42176 / 42214 port layout.');
+});
+$('btnClearPorts').addEventListener('click', () => {
+  S.ports = {}; saveSettings(); renderPorts(); lastSent.clear();
+  log('Port assignments cleared.');
+});
+
+const padPick = $('padPick');
+padPick.addEventListener('change', () => {
+  S.padId = padPick.value;
+  padLabelShown = '';
+  saveSettings();
+  log(S.padId ? 'Using ' + S.padId : 'Picking the controller automatically.');
+});
+
+bindCheck('setShowRaw','showRaw', () => { $('rawInput').hidden = !S.showRaw; });
+$('rawInput').hidden = !S.showRaw;
+
+const throttleMode = $('setThrottleMode');
+throttleMode.value = S.throttleMode;
+throttleMode.addEventListener('change', () => {
+  S.throttleMode = throttleMode.value;
+  saveSettings();
+  describeMapping();
+  log(S.throttleMode === 'stick' ? 'Throttle moved to the right stick.'
+    : S.throttleMode === 'both' ? 'Right stick and triggers both active.'
+    : 'Throttle back on the triggers.');
+});
+bindCheck('setStickInvert','stickInvert');
+
+$('learnDrive').addEventListener('click', () => startLearning('drive','drive stick'));
+$('learnThrottle').addEventListener('click', () => startLearning('throttle','throttle'));
+$('learnBrake').addEventListener('click', () => startLearning('brake','reverse'));
+$('learnSteer').addEventListener('click', () => startLearning('steer','steering'));
+$('learnHandbrake').addEventListener('click', () => startLearning('handbrake','brake button'));
+$('learnLights').addEventListener('click', () => startLearning('lights','lights button'));
+$('learnStop').addEventListener('click', () => startLearning('stop','stop button'));
+$('resetMap').addEventListener('click', () => {
+  S.map = structuredClone(DEFAULTS.map);
+  saveSettings(); describeMapping();
+  log('Mapping reset to the DualSense defaults.');
+});
+
+/* ------------------------------------------------------------------ *
+ * Global safety hooks
+ * ------------------------------------------------------------------ */
+addEventListener('keydown', event => {
+  if(event.code === 'Space'){ event.preventDefault(); emergencyStop(); return; }
+  if(event.code === 'KeyL' && hub.connected){ setLights(!lights.on); return; }
+  keys.add(event.code);
+});
+addEventListener('keyup', event => keys.delete(event.code));
+addEventListener('blur', () => { keys.clear(); if(hub.connected) stopEverything('window lost focus'); });
+addEventListener('gamepadconnected', event => log('Controller connected: ' + event.gamepad.id, 'good'));
+addEventListener('gamepaddisconnected', () => { log('Controller disconnected.', 'bad'); if(hub.connected) stopEverything('controller gone'); });
+document.addEventListener('visibilitychange', () => { if(document.hidden && hub.connected) stopEverything('page hidden'); });
+addEventListener('pagehide', () => { if(hub.connected) stopEverything('page closed'); });
+
+/* ------------------------------------------------------------------ *
+ * Helpers and boot
+ * ------------------------------------------------------------------ */
+function clamp(value, low, high){ return value < low ? low : (value > high ? high : value); }
+function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+
+if(!navigator.bluetooth){
+  log('Web Bluetooth is not available here. On iPhone and iPad open this page in Bluefy; on a computer use Chrome or Edge over HTTPS.', 'bad');
+}else if(!isSecureContext){
+  log('This page is not in a secure context. Web Bluetooth needs HTTPS or localhost.', 'bad');
+}
+describeMapping();
+renderPorts();
+refreshUI();
+updateTxStats();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
