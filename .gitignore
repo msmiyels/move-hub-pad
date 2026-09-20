@@ -9,7 +9,7 @@ dist/
 .idea/
 .obsidian/
 .github/
-.impeccable
+.impeccable/
 
 # Design
 DESIGN.md
@@ -19,5 +19,9 @@ PRODUCT.md
 .claude/
 .copilot/
 .opencode/
+.mcp.json
+
+AGENTS.md
+CLAUDE.md
 
 
