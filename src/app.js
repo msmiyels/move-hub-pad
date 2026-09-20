@@ -33,8 +33,8 @@ const $ = id => document.getElementById(id);
 
 const STORE_KEY = 'movehub-pad.v1';
 const DEFAULTS = {
-  maxPower:60, turnAssist:45, steerTorque:55, steerHold:true,
-  deadzone:8, expo:35,
+  maxPower:100, turnAssist:50, steerTorque:60, steerHold:true,
+  deadzone:8, expo:50,
   invertDrive:false, invertSteer:false, swapSides:false,
   throttleMode:'triggers', stickInvert:true,
   lightBrightness:100, hubColour:-1,
