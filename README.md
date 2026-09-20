@@ -16,14 +16,14 @@
 The hub in sets **42176** (Porsche GT4 e-Performance), **42214** (Lamborghini Revuelto) and
 **42239** (Batmobile Tumbler) only talks to LEGO's CONTROL+ app. Its firmware is password
 locked, so Pybricks cannot be installed on it, and the app has no gamepad support. It does,
-however, still speak the plain LEGO Wireless Protocol v3 over Bluetooth Low Energy — which is
+however, still speak the plain LEGO Wireless Protocol v3 over Bluetooth Low Energy - which is
 all this page needs.
 
 A small static site (Vite, no framework), no account, nothing installed on the hub.
 
 ## What you need
 
-| | |
+| Requirement | Description |
 |---|---|
 | Hub | Technic Move Hub 88019 (sets 42176 / 42214 / 42239) with stock firmware |
 | Controller | PlayStation DualSense, Xbox Wireless Controller, or any pad the browser reports |
@@ -36,11 +36,11 @@ Safari and Chrome for iOS cannot do Web Bluetooth. On iOS, Bluefy is the only ro
 
 1. Fork or download this repository.
 2. In **Settings → Pages**, set the source to `GitHub Actions`.
-3. Push to `main` — the included workflow (`.github/workflows/deploy.yml`) builds the site with
+3. Push to `main` - the included workflow (`.github/workflows/deploy.yml`) builds the site with
    Vite and deploys it. After a minute the page is live at `https://<user>.github.io/<repo>/`.
 
 To run it locally: `npm install`, then `npm run dev` (or `npm run build && npm run preview` to
-check the production build). Netlify, Vercel or any static host works just as well — point it at
+check the production build). Netlify, Vercel or any static host works just as well - point it at
 `npm run build`, output directory `dist`.
 
 ## First run
@@ -49,7 +49,7 @@ check the production build). Netlify, Vercel or any static host works just as we
 2. Open the page and **press one button on the controller**. Browsers hide a gamepad until it
    sends its first input; the badge in the header lights up once it appears.
 3. Press the green button on the hub so it blinks, then tap **Connect hub** and pick it from
-   the list. If the list stays empty, tap Connect again — the page falls back from a service
+   the list. If the list stays empty, tap Connect again - the page falls back from a service
    filter to a name filter to showing every device.
 4. Check the **Ports** tab. The hub reports its built-in devices on connect and they are
    assigned automatically. If nothing was detected, press *Apply known 42176 / 42214 layout*.
@@ -64,14 +64,14 @@ check the production build). Netlify, Vercel or any static host works just as we
 | L2 | Reverse |
 | Right stick up / down | Accelerate and reverse, if selected instead of the triggers |
 | Left stick | Steer |
-| Square | Brake — overrides throttle for as long as it is held |
+| Square | Brake - overrides throttle for as long as it is held |
 | Circle | Headlights on / off |
 | Options | Emergency stop |
 | W / S / A / D, B, L, Space | Same, for testing on a desktop |
 
 Any pad the browser does not report as a standard mapping can be taught: the Pad tab samples
 an input for three seconds and takes whichever axis or button moved furthest, including triggers
-that idle at −1.
+that idle at -1.
 
 ## Settings worth knowing
 
@@ -82,7 +82,7 @@ that idle at −1.
   *Ease off when held* halves the force 0.4 s after the steering stops moving.
 - **Swap left and right wheel** if the car turns into the wrong corner, **Reverse drive
   direction** if the triggers are the wrong way round. The two wheel motors are built facing
-  each other, so one port runs inverted — that is normal, not a fault.
+  each other, so one port runs inverted - that is normal, not a fault.
 
 Everything is stored in `localStorage` and restored on the next visit.
 
@@ -105,8 +105,8 @@ Service `00001623-1212-efde-1623-785feabcd123`, characteristic `…1624…`, hub
 
 | Purpose | Frame |
 |---|---|
-| Motor power | `08 00 81 <port> 11 51 00 <power>` — signed, `0` coasts, `127` brakes |
-| Headlights | `09 00 81 35 11 51 00 36 <brightness>` — mask `0x36` selects the four body LEDs |
+| Motor power | `08 00 81 <port> 11 51 00 <power>` - signed, `0` coasts, `127` brakes |
+| Headlights | `09 00 81 35 11 51 00 36 <brightness>` - mask `0x36` selects the four body LEDs |
 | Hub RGB LED | `08 00 81 <port> 11 51 00 <colour>` |
 | Hub property | `05 00 01 <property> <operation>` |
 | Session end | `04 00 02 02` |
@@ -118,8 +118,8 @@ Ports reported by the hub in 42176 and 42214:
 | 50, 51 | `0x0056` | wheel motors, 50 built inverted |
 | 52 | `0x0057` | steering |
 | 53 | `0x0058` | six body LEDs |
-| 54 | `0x0059` | LEGO's own drive VM — deliberately unused here |
-| 55–58, 60 | sensors, voltage | read-only |
+| 54 | `0x0059` | LEGO's own drive VM - deliberately unused here |
+| 55-58, 60 | sensors, voltage | read-only |
 | 63 | `0x0017` | RGB LED in the power button |
 
 This page drives the motors directly rather than through the hub's drive VM on port 54. The VM
@@ -128,7 +128,7 @@ closed properly; direct motor commands avoid all of that and work from a browser
 
 Do **not** pair the hub in your operating system's Bluetooth settings. Powered Up hubs are meant
 to be connected from the browser's device picker only. The "pair" button inside that picker is
-fine — it only grants the page access.
+fine - it only grants the page access.
 
 ## Troubleshooting
 
@@ -141,7 +141,7 @@ fine — it only grants the page access.
 | Car spins on the spot | Both wheel ports have the same invert setting. One of them must be inverted. |
 | Safety lock never clears | A trigger idles away from zero. Teach throttle and reverse in the Pad tab. |
 
-Turn on *Log every packet as hex* in the Log tab before reporting anything — it shows every frame
+Turn on *Log every packet as hex* in the Log tab before reporting anything - it shows every frame
 sent and received, and decodes the hub's error replies.
 
 ## Credits

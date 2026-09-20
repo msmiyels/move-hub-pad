@@ -1,4 +1,4 @@
-// LEGO Wireless Protocol v3 — constants
+// LEGO Wireless Protocol v3 - constants
 const SERVICE_UUID = '00001623-1212-efde-1623-785feabcd123';
 const CHAR_UUID    = '00001624-1212-efde-1623-785feabcd123';
 
@@ -213,7 +213,7 @@ async function openLink(device){
         characteristic.addEventListener('characteristicvaluechanged', onNotification);
         hub.sendOnly = false;
       }catch(err){
-        log('Notifications unavailable — running send-only. Assign the ports by hand.', 'bad');
+        log('Notifications unavailable - running send-only. Assign the ports by hand.', 'bad');
       }
       hub.connected = true;
       hub.reconnects = 0;
@@ -251,7 +251,7 @@ function closeLink(reason){
 function onLinkLost(reason){
   if(!hub.connected) return;
   closeLink('disconnected');
-  log('Connection lost — ' + reason, 'bad');
+  log('Connection lost - ' + reason, 'bad');
   if(S.autoReconnect && !hub.manualDisconnect && hub.device && hub.reconnects < 5){
     hub.reconnects++;
     log('Reconnecting (' + hub.reconnects + '/5)…');
@@ -427,7 +427,7 @@ function stopEverything(reason){
   safety.lock(reason || 'stopped');
 }
 
-// Safety lock — no output until every control sits at rest
+// Safety lock - no output until every control sits at rest
 const safety = {
   locked:true, reason:'not connected',
   lock(reason){ this.locked = true; this.reason = reason; },
@@ -437,7 +437,7 @@ const safety = {
     if(atRest && hub.connected && portsWithRole('drive').length){
       this.locked = false;
       if(this.reason !== 'window lost focus' && this.reason !== 'page hidden'){
-        log('Controls released — ready to drive.', 'good');
+        log('Controls released - ready to drive.', 'good');
       }
     }
     return this.locked;
@@ -521,7 +521,7 @@ function readInput(pad){
 function startLearning(target, label){
   const pad = currentGamepad();
   if(!pad){
-    log('No controller detected — press a button on it first.', 'bad');
+    log('No controller detected - press a button on it first.', 'bad');
     $('map' + cap(target)).textContent = 'No controller';
     setTimeout(describeMapping, 2000);
     return;
@@ -570,7 +570,7 @@ function stepLearning(pad){
   setTeachButton(target, false);
 
   if(!best || best.range < 0.3){
-    log('Nothing moved far enough — mapping for ' + label + ' left unchanged.', 'bad');
+    log('Nothing moved far enough - mapping for ' + label + ' left unchanged.', 'bad');
     refreshUI();
     return;
   }
@@ -670,7 +670,7 @@ function showState(input){
   if(safety.locked){
     const hint = portsWithRole('drive').length
       ? 'Release the triggers and centre the stick.'
-      : 'No drive ports assigned yet — open Ports.';
+      : 'No drive ports assigned yet - open Ports.';
     setState('Safety lock', hint, 'lock');
   }else if(input.brakeHold){
     setState('Braking', 'Drive motors held.', 'err');
@@ -732,7 +732,7 @@ function refreshUI(){
 
   const battery = $('pillBat');
   battery.className = 'pill' + (hub.battery == null ? ' warn' : (hub.battery < 20 ? ' warn' : ' on'));
-  battery.querySelector('span').textContent = hub.battery == null ? 'Battery —' : 'Battery ' + hub.battery + '%';
+  battery.querySelector('span').textContent = hub.battery == null ? 'Battery -' : 'Battery ' + hub.battery + '%';
 
   $('btnConnect').disabled = hub.connected;
   $('btnConnect').textContent = hub.connected ? 'Connected' : 'Connect hub';
@@ -748,7 +748,7 @@ function updateTxStats(){
 
 const cap = text => text[0].toUpperCase() + text.slice(1);
 function describeMapping(){
-  const describe = (binding) => binding ? binding.kind + ' ' + binding.index : '—';
+  const describe = (binding) => binding ? binding.kind + ' ' + binding.index : '-';
   for(const target of Object.keys(S.map)){
     const output = $('map' + cap(target));
     if(output) output.textContent = describe(S.map[target]);
@@ -817,7 +817,7 @@ function renderPorts(){
 
 async function testPort(port){
   if(!hub.connected){ log('Connect the hub first.', 'bad'); return; }
-  if(!mayWrite(port)){ log('Port ' + port + ' is not a motor or light — not writing to it.', 'bad'); return; }
+  if(!mayWrite(port)){ log('Port ' + port + ' is not a motor or light - not writing to it.', 'bad'); return; }
   log('Testing port ' + port + ' at 40% for 0.6 s.');
   sendMotor(port, 40, {urgent:true});
   await sleep(600);
@@ -892,7 +892,7 @@ $('btnHubInfo').addEventListener('click', () => {
 $('btnClearLog').addEventListener('click', () => { logEl.textContent = ''; logLines.length = 0; });
 $('btnCopyLog').addEventListener('click', async () => {
   try{ await navigator.clipboard.writeText(logLines.join('\n')); log('Log copied.'); }
-  catch(err){ log('Clipboard blocked — select the log text manually.', 'bad'); }
+  catch(err){ log('Clipboard blocked - select the log text manually.', 'bad'); }
 });
 $('btnKnownLayout').addEventListener('click', () => {
   S.ports = structuredClone(KNOWN_LAYOUT);
