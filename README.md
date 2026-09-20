@@ -47,7 +47,7 @@ check the production build). Netlify, Vercel or any static host works just as we
 
 1. Pair the controller with your phone, tablet or computer the normal way, in Bluetooth settings.
 2. Open the page and **press one button on the controller**. Browsers hide a gamepad until it
-   sends its first input; the pill in the header turns green once it appears.
+   sends its first input; the badge in the header lights up once it appears.
 3. Press the green button on the hub so it blinks, then tap **Connect hub** and pick it from
    the list. If the list stays empty, tap Connect again — the page falls back from a service
    filter to a name filter to showing every device.

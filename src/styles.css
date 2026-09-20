@@ -1,85 +1,44 @@
 /* ------------------------------------------------------------------ *
- * Tokens. Light is the default; the deep-blue palette comes back as
- * the dark appearance. Blue is the tint colour — everything you can
- * tap is blue. Yellow, green and red only ever mean live input,
- * go and stop.
+ * Lamborghini: absolute black, white type, one gold CTA. Depth comes
+ * from surface steps (#000 → #181818 → #202020), never from shadows.
+ * Zero radius everywhere except the switch. Uppercase, weight 400.
+ * Cyan is the informational accent (live state, active tab, slider);
+ * red exists for one reason only — the STOP control.
  * ------------------------------------------------------------------ */
-:root{
-  color-scheme: light dark;
-
-  --bg:#eef2fb;                 /* grouped background, a breath of blue */
-  --card:#ffffff;
-  --inset:#f1f4fb;              /* tracks, log, raw readout */
-  --line: rgba(0,29,108,.10);
-  --line-strong: rgba(0,29,108,.22);
-
-  --ink:#001141;
-  --ink-soft:#1f2f63;
-  --muted:#5b6b99;
-  --faint:#8e9bc0;
-
-  --blue:#002d9c;               /* tint: buttons, toggles */
-  --blue-deep:#001d6c;          /* pressed / hover */
-  --blue-tint: rgba(0,45,156,.09);
-  --on-blue:#ffffff;
-
-  /* position marker: active tab, focus ring, slider knob, caret.
-     Blue on the light ground, yellow on the dark one. */
-  --mark:#002d9c;
-
-  --cta:#f2c94c;                /* live input (steering) and pending status */
-  --cta-ink:#8a6a0c;
-  --cta-tint: rgba(242,201,76,.22);
-
-  --go:#42be65;
-  --go-ink:#1e8a3e;
-  --go-tint: rgba(66,190,101,.16);
-  --stop:#fa4d56;
-  --stop-ink:#c21a22;
-  --stop-solid:#da1e28;
-  --stop-solid-dark:#a2191f;
-  --stop-tint: rgba(250,77,86,.14);
-
-  --switch-off: rgba(0,29,108,.18);
-  --knob:#ffffff;
-
-  --r-card:16px;
-  --r-btn:12px;
-  --r-ctl:10px;
-  --shadow:0 1px 2px rgba(0,17,65,.06), 0 6px 20px -8px rgba(0,17,65,.18);
-  --ease:cubic-bezier(.16,1,.3,1);
-
-  box-sizing:border-box;
+@font-face{
+  font-family:"Archivo";
+  src:url("./fonts/Archivo-Variable-latin.woff2") format("woff2");
+  font-weight:100 900;
+  font-stretch:62% 125%;
+  font-display:swap;
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#001141;
-    --card:#001d6c;
-    --inset:#002d9c;
-    --line: rgba(255,255,255,.12);
-    --line-strong: rgba(255,255,255,.28);
+:root{
+  color-scheme: dark;
 
-    --ink:#ffffff;
-    --ink-soft:#dce6fb;
-    --muted:#9db3e0;
-    --faint:#6f89c2;
+  --black:#000000;
+  --iron:#181818;                 /* tracks, log, inputs */
+  --charcoal:#202020;             /* dividers, elevated panels */
+  --shadow:#313131;
+  --graphite:#494949;
+  --ash:#7d7d7d;                  /* body / muted text */
+  --steel:#969696;                /* disabled, subtle labels, neutral badge */
+  --white:#ffffff;
+  --smoke:#f5f5f5;
+  --ghost-line: rgba(255,255,255,.5);
 
-    --blue:#78a9ff;
-    --blue-deep:#a6c8ff;
-    --blue-tint: rgba(120,169,255,.16);
-    --on-blue:#001141;
+  --gold:#ffc000;                 /* primary CTA only */
+  --gold-dark:#917300;
+  --gold-text:#ffce3e;
+  --cyan:#29abe2;                 /* informational accent */
+  --teal:#1eaedb;                 /* ghost hover */
+  --link:#3860be;
 
-    --mark:#f2c94c;
+  --stop:#e10600;                 /* the one exception: emergency stop */
+  --stop-dark:#a50400;
 
-    --cta-ink:#f2c94c;
-    --go-ink:#42be65;
-    --stop-ink:#fa4d56;
-
-    --switch-off: rgba(255,255,255,.18);
-    --knob:#ffffff;
-    --shadow:0 1px 3px rgba(0,0,0,.35);
-  }
+  --ease:cubic-bezier(.16,1,.3,1);
+  box-sizing:border-box;
 }
 
 *,*::before,*::after{box-sizing:inherit}
@@ -87,11 +46,11 @@
 html,body{height:100%}
 body{
   margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  font-size:16px;
-  line-height:1.45;
+  background:var(--black);
+  color:var(--white);
+  font-family:"Archivo",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
   -webkit-text-size-adjust:100%;
   -webkit-user-select:none;
   user-select:none;
@@ -99,16 +58,15 @@ body{
   overflow:hidden;
 }
 
-::selection{background:var(--cta-tint);color:var(--ink)}
+::selection{background:var(--gold);color:var(--black)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:99rem;border:3px solid transparent;background-clip:padding-box}
-*{scrollbar-color:var(--line-strong) transparent;scrollbar-width:thin}
+::-webkit-scrollbar-thumb{background:var(--graphite);border:3px solid transparent;background-clip:padding-box}
+*{scrollbar-color:var(--graphite) transparent;scrollbar-width:thin}
 
-a{color:var(--blue);text-underline-offset:2px}
-:focus-visible{outline:2px solid var(--mark);outline-offset:2px;border-radius:4px}
-
-.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+a{color:var(--white);text-decoration:underline;text-underline-offset:3px}
+a:hover{color:var(--link)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
 /* ---------- app shell: one viewport, no page scroll ---------- */
 .wrap{
@@ -116,223 +74,188 @@ a{color:var(--blue);text-underline-offset:2px}
   display:flex;flex-direction:column;
   height:100vh;height:100dvh;
   padding:0 16px;
-  padding-top:max(14px, env(safe-area-inset-top,14px));
+  padding-top:max(16px, env(safe-area-inset-top,16px));
 }
 
 /* ---------- header ---------- */
-.strip{flex:none;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
-.mark{display:flex;align-items:center;gap:10px;min-width:0}
-.appicon{
-  width:30px;height:30px;border-radius:8px;flex:none;
-  display:grid;place-items:center;
-  background:var(--blue);color:var(--on-blue);
-  box-shadow:inset 0 -1px 0 rgba(0,0,0,.18);
-}
-@media (prefers-color-scheme: dark){ .appicon{background:var(--cta);color:#001141} }
-.appicon .ic{width:19px;height:19px;stroke-width:2}
-.title{font-weight:700;font-size:19px;letter-spacing:-.015em;color:var(--ink)}
-.sets{margin-left:auto;font-size:13px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.strip{flex:none;display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.mark{font-weight:400;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--white)}
 
-.pillrow{display:flex;gap:8px}
+.pillrow{display:flex;gap:6px}
 .pill{
-  flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  background:var(--card);border:1px solid var(--line);
-  border-radius:999px;padding:7px 10px;
-  font-size:12.5px;font-weight:500;color:var(--muted);
+  flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--ghost-line);padding:6px 6px;
+  font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);
 }
 .pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill .ic{width:15px;height:15px;stroke-width:2}
-/* solid chips: yellow while waiting, green once live. Navy text on both,
-   in both appearances — a wash of either colour goes muddy on white and on navy. */
-.pill.on{color:#001141;border-color:transparent;background:var(--go)}
-.pill.warn{color:#001141;border-color:transparent;background:var(--cta)}
+.pill.warn{color:var(--steel);border-color:var(--ghost-line)}
+.pill.on{color:var(--black);background:var(--cyan);border-color:var(--cyan)}
 
 /* ---------- panels ---------- */
 .panels{flex:1;min-height:0;position:relative}
-.panel{
-  height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:2px 0 16px;
-}
+.panel{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 16px}
 .panel[hidden]{display:none}
 
-.card{
-  background:var(--card);border-radius:var(--r-card);
-  box-shadow:var(--shadow);padding:16px;
-}
-
-/* ---------- tab bar (bottom, iOS style) ---------- */
-/* phone: full-bleed tab bar at the bottom, under the thumb.
-   wider screens: a segmented row right under the header, so the tabs sit
-   next to what they switch instead of at the far end of a tall window. */
+/* ---------- tabs ---------- */
+/* phone: label row along the bottom; wider: a strip under the header.
+   Selection is a 2px white rule — no fill, no radius. */
 .switcher{
   flex:none;display:flex;
   margin:0 -16px;
-  padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));
-  background:var(--card);
-  border-top:1px solid var(--line);
+  padding:0 8px env(safe-area-inset-bottom,0px);
+  background:var(--black);
+  border-top:1px solid var(--charcoal);
 }
 .switcher button{
   flex:1 1 0;min-width:0;min-height:50px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  font:inherit;font-size:11px;font-weight:500;letter-spacing:.01em;color:var(--muted);
-  background:transparent;border:none;border-radius:var(--r-btn);
-  padding:6px 2px;cursor:pointer;touch-action:manipulation;
-  box-shadow:none;
-  transition:color .12s var(--ease),background .12s var(--ease);
+  font:inherit;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);
+  background:transparent;border:none;border-radius:0;
+  padding:8px 2px;cursor:pointer;touch-action:manipulation;
+  box-shadow:inset 0 2px 0 transparent;
+  transition:color .12s var(--ease),box-shadow .12s var(--ease);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.switcher button .ic{width:24px;height:24px;stroke-width:1.75}
-.switcher button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-@media (hover:hover){ .switcher button:not([disabled]):not([aria-selected="true"]):hover{color:var(--ink);background:transparent} }
-.switcher button[aria-selected="true"]{color:var(--mark);font-weight:600}
-.switcher button[aria-selected="true"] .ic{stroke-width:2.25}
-.switcher button:active{transform:none}
+@media (hover:hover){ .switcher button:not([aria-selected="true"]):hover{color:var(--white);background:transparent;border-color:transparent} }
+.switcher button[aria-selected="true"]{color:var(--white);box-shadow:inset 0 2px 0 var(--white)}
+.switcher button:active{opacity:1}
 
 @media (min-width:600px){
   .wrap > .strip{order:0}
   .wrap > .switcher{order:1}
   .wrap > .panels{order:2}
-  .switcher{
-    margin:0 0 14px;padding:4px;
-    border:none;border-radius:var(--r-card);
-    box-shadow:var(--shadow);
-  }
-  .switcher button{
-    flex-direction:row;gap:8px;min-height:44px;
-    font-size:13.5px;padding:8px 10px;
-  }
-  .switcher button .ic{width:20px;height:20px}
-  .switcher button[aria-selected="true"]{background:var(--blue-tint)}
+  .switcher{margin:0 0 20px;padding:0;border-top:none;border-bottom:1px solid var(--charcoal)}
+  .switcher button{min-height:44px;padding:10px 8px;font-size:12px;box-shadow:inset 0 -2px 0 transparent}
+  .switcher button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--white)}
 }
 
-/* ---------- drive cluster ---------- */
-.cluster{margin-bottom:12px}
-.state{font-size:17px;font-weight:600;margin:0 0 18px;display:flex;flex-direction:column;gap:2px;color:var(--ink)}
-.state small{font-size:13.5px;font-weight:400;color:var(--muted)}
-.state.lock{color:var(--cta-ink)}
-.state.live{color:var(--go-ink)}
-.state.err{color:var(--stop-ink)}
+/* ---------- drive ---------- */
+.cluster{margin:2px 0 24px}
+.state{font-size:22px;font-weight:400;line-height:1.15;letter-spacing:.02em;text-transform:uppercase;margin:0 0 18px;display:flex;flex-direction:column;gap:6px;color:var(--white)}
+.state small{font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;line-height:1.5;color:var(--ash)}
+.state.lock{color:var(--gold-text)}
+.state.live{color:var(--cyan)}
+.state.err{color:var(--stop)}
 
-.rowlabel{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted);margin-bottom:6px}
-.rowlabel b{color:var(--ink);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums;line-height:1}
-.steer{position:relative;height:16px;background:var(--inset);border-radius:999px;overflow:hidden;margin-bottom:14px}
-.steer .fill{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:0 50%;transform:scaleX(0);background:var(--cta)}
-.steer .tick{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--line-strong)}
-.meter{position:relative;height:16px;background:var(--inset);border-radius:999px;overflow:hidden;margin-bottom:14px}
-.meter .fill{position:absolute;top:0;bottom:0;left:0;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--go);border-radius:999px}
-.meter.brake{margin-bottom:2px}
+.rowlabel{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
+.rowlabel b{color:var(--white);font-weight:400;font-size:14px;letter-spacing:0;font-variant-numeric:tabular-nums}
+.steer,.meter{position:relative;height:8px;background:var(--iron);overflow:hidden;margin-bottom:14px}
+.steer .fill{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:0 50%;transform:scaleX(0);background:var(--white)}
+.steer .tick{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--graphite)}
+.meter .fill{position:absolute;top:0;bottom:0;left:0;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--cyan)}
+.meter.brake{margin-bottom:0}
 .meter.brake .fill{background:var(--stop)}
 
 /* ---------- buttons ---------- */
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 button{
-  font:inherit;line-height:1.3;font-weight:600;color:var(--blue);
-  background:var(--blue-tint);border:none;
-  border-radius:var(--r-btn);padding:13px 14px;min-height:48px;
+  font:inherit;font-size:14px;line-height:1.3;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--white);
+  background:transparent;border:1px solid var(--ghost-line);border-radius:0;
+  padding:12px 16px;min-height:48px;
   cursor:pointer;touch-action:manipulation;
-  transition:background .15s var(--ease),transform .1s var(--ease),opacity .15s var(--ease);
+  transition:background .12s var(--ease),border-color .12s var(--ease),color .12s var(--ease),opacity .12s var(--ease);
 }
 @media (hover:hover){
-  button:not([disabled]):hover{background:rgba(0,45,156,.15)}
-  button.primary:not([disabled]):hover{background:var(--blue-deep)}
-  button.stop:not([disabled]):hover{background:var(--stop-solid-dark)}
+  button:not([disabled]):hover{background:var(--teal);border-color:var(--teal);color:var(--black)}
+  button.primary:not([disabled]):hover{background:var(--gold-dark);border-color:var(--gold-dark);color:var(--black)}
+  button.stop:not([disabled]):hover{background:var(--stop-dark);border-color:var(--stop-dark);color:var(--white)}
 }
-button:active{transform:scale(.98)}
-button[disabled]{opacity:.45;cursor:default}
-button.primary{background:var(--blue);color:var(--on-blue)}
-/* connected: keep it green and solid, at full opacity */
-button.primary[disabled]{background:var(--go);color:#001141;opacity:1}
-button.stop{background:var(--stop-solid);color:#fff;font-size:18px;font-weight:700;letter-spacing:.06em}
-button.ghost{background:var(--blue-tint)}
+button:active{opacity:.7}
+button[disabled]{opacity:.35;cursor:default}
+button.primary{background:var(--gold);border-color:var(--gold);color:var(--black)}
+/* connected: the live colour, full opacity */
+button.primary[disabled]{background:var(--cyan);border-color:var(--cyan);color:var(--black);opacity:1}
+button.stop{background:var(--stop);border-color:var(--stop);color:var(--white);font-weight:700;letter-spacing:.2em}
 
 @media (min-width:560px){ .actions{grid-template-columns:repeat(4,1fr)} }
 
-/* ---------- grouped settings lists ---------- */
-.group{
-  background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);
-  padding:0 16px;margin:12px 0;
+/* ---------- settings: rows on black, charcoal rules ---------- */
+.group{border-top:1px solid var(--shadow);margin:20px 0 24px}
+.field{display:flex;align-items:center;gap:14px;padding:12px 0;min-height:52px;border-bottom:1px solid var(--charcoal)}
+.field label{flex:1;font-size:15px;color:var(--white)}
+.field label em{display:block;font-style:normal;font-size:13px;color:var(--ash);line-height:1.45;margin-top:2px}
+.field output{min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ash);font-size:13px}
+.field button{padding:6px 14px;min-height:34px;font-size:12px;letter-spacing:.12em}
+
+/* range: a flat iron track and a square white thumb — no shadow, no outline */
+input[type=range]{
+  flex:0 0 150px;margin:0;height:24px;
+  appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;
 }
-.field{display:flex;align-items:center;gap:14px;padding:12px 0;min-height:52px;border-bottom:1px solid var(--line)}
-.group .field:last-child{border-bottom:none}
-.field label{flex:1;font-size:15px;color:var(--ink)}
-.field label em{display:block;font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:2px}
-.field output{min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--charcoal);border:none}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;
+  width:14px;height:14px;margin-top:-5px;border-radius:0;border:none;
+  background:var(--white);box-shadow:none;
+}
+input[type=range]::-moz-range-track{height:4px;background:var(--charcoal);border:none}
+input[type=range]::-moz-range-progress{height:4px;background:var(--cyan)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:0;border:none;background:var(--white);box-shadow:none}
+input[type=range]:focus-visible{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--cyan);outline-offset:2px}
+input[type=range]:focus-visible::-moz-range-thumb{outline:2px solid var(--cyan);outline-offset:2px}
 
-input[type=range]{flex:0 0 150px;accent-color:var(--mark);margin:0}
-
-/* checkbox → switch. The input is still a checkbox, app.js does not care. */
+/* checkbox → switch: the one rounded element in the system */
 input[type=checkbox]{
   appearance:none;-webkit-appearance:none;
-  width:50px;height:30px;border-radius:999px;margin:0;flex:none;
-  background:var(--switch-off);position:relative;cursor:pointer;
-  transition:background .2s var(--ease);
+  width:42px;height:24px;border-radius:20px;margin:0;flex:none;
+  background:transparent;border:1px solid #dddddd;position:relative;cursor:pointer;
+  transition:background .15s var(--ease),border-color .15s var(--ease);
 }
 input[type=checkbox]::after{
-  content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
-  background:var(--knob);box-shadow:0 2px 6px rgba(0,0,0,.2),0 0 1px rgba(0,0,0,.2);
-  transition:transform .2s var(--ease);
+  content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--white);transition:transform .15s var(--ease),background .15s var(--ease);
 }
-input[type=checkbox]:checked{background:var(--blue)}
-input[type=checkbox]:checked::after{transform:translateX(20px)}
+input[type=checkbox]:checked{background:var(--white);border-color:var(--white)}
+input[type=checkbox]:checked::after{transform:translateX(18px);background:var(--black)}
 
 select{
-  font:inherit;font-size:14.5px;line-height:1.3;
+  font:inherit;font-size:14px;line-height:1.3;
   appearance:none;-webkit-appearance:none;
-  background:var(--inset) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6b99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center / 16px;
-  color:var(--ink);border:none;border-radius:var(--r-ctl);
-  padding:8px 30px 8px 12px;max-width:100%;
+  background:var(--black) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 14px;
+  color:var(--white);border:1px solid var(--ash);border-radius:0;
+  padding:8px 32px 8px 12px;max-width:100%;
 }
-@media (prefers-color-scheme: dark){
-  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239db3e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
-}
+select:focus{border-color:var(--white);outline:none}
 
-.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.btnrow button{padding:9px 14px;min-height:40px;font-size:14px;font-weight:500}
-.note{font-size:13px;color:var(--muted);margin:8px 2px 0;line-height:1.5}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.btnrow button{padding:8px 16px;min-height:40px;font-size:12px;letter-spacing:.12em}
+.note{font-size:13px;color:var(--ash);margin:12px 0 0;line-height:1.55}
+@media (hover:none){ .note.kbd{display:none} }
 
 /* ---------- ports table ---------- */
-.tablecard{padding:4px 16px;margin-top:12px}
+.tablecard{margin-top:14px;border-top:1px solid var(--shadow)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-th{color:var(--muted);font-weight:500;font-size:12.5px}
-tr:last-child td{border-bottom:none}
+th,td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--charcoal);vertical-align:middle}
+th{color:var(--ash);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
 td:first-child,th:first-child{padding-left:0}
 td:last-child,th:last-child{padding-right:0;text-align:right}
-td.num{font-variant-numeric:tabular-nums;color:var(--muted)}
-td[colspan]{text-align:left;padding:14px 0}
-td input[type=checkbox]{width:40px;height:24px}
-td input[type=checkbox]::after{width:20px;height:20px}
-td input[type=checkbox]:checked::after{transform:translateX(16px)}
-td select{padding:6px 26px 6px 10px;font-size:13.5px}
-td button{padding:6px 12px;min-height:34px;font-size:13.5px;font-weight:500}
+td.num{font-variant-numeric:tabular-nums;color:var(--ash)}
+td[colspan]{text-align:left;padding:14px 0;color:var(--ash)}
+td select{padding:5px 28px 5px 10px;font-size:13px}
+td button{padding:4px 12px;min-height:30px;font-size:11px}
 
-/* a fixed-width slider or a dropdown squeezed 3-4 lines of hint text into a
-   cramped column on narrow screens; let those two control types drop to a
-   full-width row below the label. A switch field stays label-left,
-   switch-right at any width — there's nothing to squeeze there. */
+/* narrow screens: sliders and dropdowns drop below their label instead of
+   squeezing the hint text. Switch rows stay label-left, switch-right. */
 @media (max-width:599px){
   .field:has(input[type=range]),
-  .field:has(select){
-    flex-wrap:wrap;row-gap:10px;
-  }
+  .field:has(select){flex-wrap:wrap;row-gap:10px}
   .field:has(input[type=range]) label,
-  .field:has(select) label{
-    flex:1 1 100%;
-  }
+  .field:has(select) label{flex:1 1 100%}
   input[type=range]{flex:1 1 auto}
   select{flex:1 1 auto}
 }
 
 /* ---------- log, raw readout ---------- */
 #log,#rawInput{
-  background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);padding:14px 16px;
+  background:var(--iron);padding:12px 14px;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.6;
-  white-space:pre-wrap;color:var(--ink-soft);-webkit-user-select:text;user-select:text;caret-color:var(--mark);
+  white-space:pre-wrap;color:var(--smoke);-webkit-user-select:text;user-select:text;caret-color:var(--gold);
 }
 #log{min-height:260px}
-#log:empty::before{content:"No packets yet — connect the hub to see traffic here.";color:var(--faint)}
-#log .t{color:var(--faint)}
-#log .bad{color:var(--stop-ink)}
-#log .good{color:var(--go-ink)}
+#log:empty::before{content:"No packets yet — connect the hub to see traffic here.";color:var(--ash)}
+#log .t{color:var(--ash)}
+#log .bad{color:var(--stop)}
+#log .good{color:var(--cyan)}
 #rawInput{margin:12px 0 0}
 #rawInput[hidden]{display:none}
 

@@ -11,11 +11,13 @@ dist/
 .github/
 .impeccable
 
+# Design
+DESIGN.md
+PRODUCT.md
+
 # AI related
 .claude/
 .copilot/
 .opencode/
 
-# Later
-DESIGN.md
-PRODUCT.md
+
