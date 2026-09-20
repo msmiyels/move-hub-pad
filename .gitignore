@@ -6,6 +6,7 @@ node_modules/
 dist/
 tasks/
 assets/
+docs/
 
 # Software, apps and editor files
 .idea/
