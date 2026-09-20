@@ -1,8 +1,4 @@
-'use strict';
-
-/* ------------------------------------------------------------------ *
- * LEGO Wireless Protocol v3 — constants
- * ------------------------------------------------------------------ */
+// LEGO Wireless Protocol v3 — constants
 const SERVICE_UUID = '00001623-1212-efde-1623-785feabcd123';
 const CHAR_UUID    = '00001624-1212-efde-1623-785feabcd123';
 
@@ -32,9 +28,9 @@ const ERROR_CODES = {
   0x07:'overcurrent', 0x08:'internal error'
 };
 
-/* ------------------------------------------------------------------ *
- * Settings
- * ------------------------------------------------------------------ */
+// Settings
+const $ = id => document.getElementById(id);
+
 const STORE_KEY = 'movehub-pad.v1';
 const DEFAULTS = {
   maxPower:60, turnAssist:45, steerTorque:55, steerHold:true,
@@ -71,10 +67,8 @@ function saveSettings(){
 }
 const S = loadSettings();
 
-/* ------------------------------------------------------------------ *
- * Log
- * ------------------------------------------------------------------ */
-const logEl = document.getElementById('log');
+// Log
+const logEl = $('log');
 const logLines = [];
 function log(text, kind){
   const stamp = new Date().toTimeString().slice(0,8);
@@ -91,15 +85,12 @@ function log(text, kind){
 }
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2,'0')).join(' ');
 
-/* ------------------------------------------------------------------ *
- * Write queue
- *
- * One GATT write may be in flight at a time, otherwise the browser
- * throws "GATT operation already in progress". Commands are keyed, so a
- * newer value for the same port replaces a queued older one instead of
- * piling up behind it, and each key is rate limited to stay inside the
- * BLE connection interval.
- * ------------------------------------------------------------------ */
+// Write queue
+// One GATT write may be in flight at a time, otherwise the browser
+// throws "GATT operation already in progress". Commands are keyed, so a
+// newer value for the same port replaces a queued older one instead of
+// piling up behind it, and each key is rate limited to stay inside the
+// BLE connection interval.
 const tx = {
   char:null, pending:new Map(), last:new Map(), running:false, timer:0,
   sent:0, failed:0, canWriteWithoutResponse:false,
@@ -163,9 +154,7 @@ const tx = {
   }
 };
 
-/* ------------------------------------------------------------------ *
- * Frame builders
- * ------------------------------------------------------------------ */
+// Frame builders
 const frame = {
   motorPower:(port, power) => new Uint8Array([0x08,0x00,0x81,port,0x11,0x51,0x00, power & 0xff]),
   headlights:(port, mask, brightness) => new Uint8Array([0x09,0x00,0x81,port,0x11,0x51,0x00, mask, brightness]),
@@ -174,9 +163,7 @@ const frame = {
   hubAction:(action) => new Uint8Array([0x04,0x00,0x02, action])
 };
 
-/* ------------------------------------------------------------------ *
- * Hub connection
- * ------------------------------------------------------------------ */
+// Hub connection
 const hub = {
   device:null, server:null, connected:false, sendOnly:false,
   ports:new Map(), battery:null, manualDisconnect:false, scanStage:0, reconnects:0
@@ -204,9 +191,9 @@ async function connectHub(){
     return;
   }
   hub.scanStage = 0;
+  if(device !== hub.device) device.addEventListener('gattserverdisconnected', () => onLinkLost('hub closed the connection'));
   hub.device = device;
   hub.manualDisconnect = false;
-  device.addEventListener('gattserverdisconnected', () => onLinkLost('hub closed the connection'));
   await openLink(device);
 }
 
@@ -222,6 +209,7 @@ async function openLink(device){
       hub.sendOnly = true;
       try{
         await characteristic.startNotifications();
+        characteristic.removeEventListener('characteristicvaluechanged', onNotification);
         characteristic.addEventListener('characteristicvaluechanged', onNotification);
         hub.sendOnly = false;
       }catch(err){
@@ -249,17 +237,21 @@ async function openLink(device){
   }
 }
 
-function onLinkLost(reason){
-  if(!hub.connected) return;
+function closeLink(reason){
   hub.connected = false;
   hub.ports.clear();
   tx.detach();
-  safety.lock('disconnected');
   lights.on = false;
   lastSent.clear();
-  log('Connection lost — ' + reason, 'bad');
+  safety.lock(reason);
   refreshUI();
   renderPorts();
+}
+
+function onLinkLost(reason){
+  if(!hub.connected) return;
+  closeLink('disconnected');
+  log('Connection lost — ' + reason, 'bad');
   if(S.autoReconnect && !hub.manualDisconnect && hub.device && hub.reconnects < 5){
     hub.reconnects++;
     log('Reconnecting (' + hub.reconnects + '/5)…');
@@ -275,20 +267,15 @@ async function disconnectHub(){
     tx.send('bye', frame.hubAction(0x02), {urgent:true});
     await sleep(150);
   }
-  tx.detach();
   try{ if(hub.server && hub.server.connected) hub.server.disconnect(); }catch(err){ /* already gone */ }
-  hub.connected = false;
-  hub.ports.clear();
-  refreshUI();
-  renderPorts();
+  closeLink('disconnected');
   log('Disconnected.');
 }
 
-/* ------------------------------------------------------------------ *
- * Incoming messages
- * ------------------------------------------------------------------ */
+// Incoming messages
 function onNotification(event){
-  const data = new Uint8Array(event.target.value.buffer);
+  const value = event.target.value;
+  const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
   if(S.hexLog) log('RX  ' + hex(data));
   switch(data[2]){
     case 0x01: onHubProperty(data); break;
@@ -338,9 +325,7 @@ function onHubError(data){
   log('Hub rejected command 0x' + command.toString(16) + ': ' + (ERROR_CODES[code] || ('code 0x' + code.toString(16))), 'bad');
 }
 
-/* ------------------------------------------------------------------ *
- * Port helpers
- * ------------------------------------------------------------------ */
+// Port helpers
 function portsWithRole(role){
   const found = [];
   for(const port of Object.keys(S.ports).map(Number).sort((a,b) => a - b)){
@@ -362,9 +347,7 @@ function clampPower(power){
   return clamp(Math.round(power), -100, 100);
 }
 
-/* ------------------------------------------------------------------ *
- * Driving
- * ------------------------------------------------------------------ */
+// Driving
 const lastSent = new Map();
 const lights = {on:false};
 let steerLastValue = 0, steerLastChange = 0;
@@ -414,7 +397,7 @@ function setLights(on){
     if(!mayWrite(port)) continue;
     tx.send('l' + port, frame.headlights(port, HEADLIGHT_MASK, brightness), {urgent:true});
   }
-  document.getElementById('btnLights').textContent = on ? 'Lights on' : 'Lights off';
+  refreshUI();
 }
 
 function applyHubColour(){
@@ -434,6 +417,7 @@ function stopEverything(reason){
     lastSent.set(port, 0);
     sendMotor(port, 0, {urgent:true});
   }
+  // brake first, then let the motors coast so they are not held under current
   setTimeout(() => {
     for(const port of portsWithRole('drive')){
       lastSent.set(port, 0);
@@ -443,9 +427,7 @@ function stopEverything(reason){
   safety.lock(reason || 'stopped');
 }
 
-/* ------------------------------------------------------------------ *
- * Safety lock — no output until every control sits at rest
- * ------------------------------------------------------------------ */
+// Safety lock — no output until every control sits at rest
 const safety = {
   locked:true, reason:'not connected',
   lock(reason){ this.locked = true; this.reason = reason; },
@@ -462,9 +444,7 @@ const safety = {
   }
 };
 
-/* ------------------------------------------------------------------ *
- * Gamepad and keyboard input
- * ------------------------------------------------------------------ */
+// Gamepad and keyboard input
 const keys = new Set();
 let learning = null;
 
@@ -485,22 +465,19 @@ function currentGamepad(){
   return pads.find(pad => pad.mapping === 'standard') || pads.find(looksLikeGamepad) || pads[0];
 }
 
+// Older browsers report gamepad buttons as plain numbers instead of GamepadButton objects
+const buttonValue = button => (typeof button === 'object' ? button.value : button);
+
 function readBinding(pad, binding){
   if(!pad || !binding) return 0;
   if(binding.kind === 'axis') return pad.axes[binding.index] || 0;
   const button = pad.buttons[binding.index];
-  if(!button) return 0;
-  return typeof button === 'object' ? button.value : button;
+  return button ? buttonValue(button) : 0;
 }
-function readUnipolar(pad, binding){
+// Scales a raw reading by its taught rest position and span; low is 0 for triggers, -1 for sticks
+function readScaled(pad, binding, low){
   const raw = readBinding(pad, binding);
-  const span = binding.span || 1;
-  return clamp((raw - (binding.rest || 0)) / span, 0, 1);
-}
-function readBipolar(pad, binding){
-  const raw = readBinding(pad, binding);
-  const span = binding.span || 1;
-  return clamp((raw - (binding.rest || 0)) / span, -1, 1);
+  return clamp((raw - (binding.rest || 0)) / (binding.span || 1), low, 1);
 }
 function pressed(pad, binding){
   if(!pad || !binding) return false;
@@ -519,20 +496,19 @@ function shapeAxis(value){
 }
 
 function readInput(pad){
-  let throttle = 0, brake = 0;
   const useStick = S.throttleMode === 'stick' || S.throttleMode === 'both';
   const useTriggers = S.throttleMode === 'triggers' || S.throttleMode === 'both';
   let value = 0;
   if(useStick){
-    value = shapeAxis(readBipolar(pad, S.map.drive)) * (S.stickInvert ? -1 : 1);
+    value = shapeAxis(readScaled(pad, S.map.drive, -1)) * (S.stickInvert ? -1 : 1);
   }
   if(useTriggers){
-    const triggers = readUnipolar(pad, S.map.throttle) - readUnipolar(pad, S.map.brake);
+    const triggers = readScaled(pad, S.map.throttle, 0) - readScaled(pad, S.map.brake, 0);
     if(Math.abs(triggers) > Math.abs(value)) value = triggers;
   }
-  throttle = Math.max(value, 0);
-  brake = Math.max(-value, 0);
-  let steer = shapeAxis(readBipolar(pad, S.map.steer));
+  let throttle = Math.max(value, 0);
+  let brake = Math.max(-value, 0);
+  let steer = shapeAxis(readScaled(pad, S.map.steer, -1));
   const brakeHold = pressed(pad, S.map.handbrake) || keys.has('KeyB');
   if(keys.has('KeyW')) throttle = Math.max(throttle, 1);
   if(keys.has('KeyS')) brake = Math.max(brake, 1);
@@ -541,7 +517,7 @@ function readInput(pad){
   return {throttle, brake, steer, brakeHold};
 }
 
-/* --- teaching an input ------------------------------------------- */
+// Teaching an input
 function startLearning(target, label){
   const pad = currentGamepad();
   if(!pad){
@@ -555,13 +531,11 @@ function startLearning(target, label){
   learning = {
     target, label, isButtonOnly, until: performance.now() + 3000,
     axes: pad.axes.map(v => ({rest:v, min:v, max:v})),
-    buttons: pad.buttons.map(b => ({rest:valueOf(b), min:valueOf(b), max:valueOf(b)}))
+    buttons: pad.buttons.map(b => ({rest:buttonValue(b), min:buttonValue(b), max:buttonValue(b)}))
   };
   log('Teaching ' + label + ': move it fully for three seconds.');
   setState('Teaching ' + label, 'Move it all the way, then release.', 'lock');
 }
-const valueOf = b => (typeof b === 'object' ? b.value : b);
-
 function stepLearning(pad){
   if(!learning || !pad) return;
   pad.axes.forEach((value, i) => {
@@ -573,7 +547,7 @@ function stepLearning(pad){
   pad.buttons.forEach((button, i) => {
     const slot = learning.buttons[i];
     if(!slot) return;
-    const value = valueOf(button);
+    const value = buttonValue(button);
     slot.min = Math.min(slot.min, value);
     slot.max = Math.max(slot.max, value);
   });
@@ -616,9 +590,7 @@ function stepLearning(pad){
   refreshUI();
 }
 
-/* ------------------------------------------------------------------ *
- * Main loop
- * ------------------------------------------------------------------ */
+// Main loop
 let previousLightsButton = false, previousStopButton = false;
 
 function loop(){
@@ -654,19 +626,20 @@ function emergencyStop(){
   log('Emergency stop.', 'bad');
 }
 
-/* ------------------------------------------------------------------ *
- * UI
- * ------------------------------------------------------------------ */
-const $ = id => document.getElementById(id);
-
+// UI
+const telemetry = {
+  valSteer:$('valSteer'), barSteer:$('barSteer'),
+  valThrottle:$('valThrottle'), barThrottle:$('barThrottle'),
+  valBrake:$('valBrake'), barBrake:$('barBrake')
+};
 function showTelemetry(input){
   const steerPercent = Math.round(input.steer * 100);
-  $('valSteer').textContent = steerPercent;
-  $('barSteer').style.transform = 'scaleX(' + (steerPercent / 100) + ')';
-  $('valThrottle').textContent = Math.round(input.throttle * 100);
-  $('barThrottle').style.transform = 'scaleX(' + input.throttle + ')';
-  $('valBrake').textContent = Math.round(input.brake * 100);
-  $('barBrake').style.transform = 'scaleX(' + input.brake + ')';
+  telemetry.valSteer.textContent = steerPercent;
+  telemetry.barSteer.style.transform = 'scaleX(' + (steerPercent / 100) + ')';
+  telemetry.valThrottle.textContent = Math.round(input.throttle * 100);
+  telemetry.barThrottle.style.transform = 'scaleX(' + input.throttle + ')';
+  telemetry.valBrake.textContent = Math.round(input.brake * 100);
+  telemetry.barBrake.style.transform = 'scaleX(' + input.brake + ')';
 }
 
 let rawNextUpdate = 0;
@@ -678,7 +651,7 @@ function renderRaw(pad, input){
   if(!pad){ box.textContent = 'No controller in use.'; return; }
   const axes = pad.axes.map((value, index) => 'axis ' + index + ': ' + value.toFixed(2)).join('   ');
   const active = pad.buttons
-    .map((button, index) => ({index, value: typeof button === 'object' ? button.value : button}))
+    .map((button, index) => ({index, value:buttonValue(button)}))
     .filter(entry => entry.value > 0.05)
     .map(entry => 'button ' + entry.index + ': ' + entry.value.toFixed(2)).join('   ');
   box.textContent =
@@ -764,6 +737,8 @@ function refreshUI(){
   $('btnConnect').disabled = hub.connected;
   $('btnConnect').textContent = hub.connected ? 'Connected' : 'Connect hub';
   $('btnDisconnect').disabled = !hub.connected;
+  $('btnLights').disabled = !hub.connected;
+  $('btnLights').textContent = lights.on ? 'Lights on' : 'Lights off';
   if(!hub.connected) setState('Not connected', 'Press the green hub button until it blinks, then connect.');
 }
 
@@ -815,7 +790,7 @@ function renderPorts(){
       select.append(option);
     }
     select.addEventListener('change', () => {
-      S.ports[port] = {role:select.value, invert:assigned.invert};
+      S.ports[port] = {...(S.ports[port] || assigned), role:select.value};
       lastSent.delete(port);
       saveSettings();
     });
@@ -826,7 +801,7 @@ function renderPorts(){
     invert.type = 'checkbox';
     invert.checked = !!assigned.invert;
     invert.addEventListener('change', () => {
-      S.ports[port] = {role:S.ports[port] ? S.ports[port].role : 'none', invert:invert.checked};
+      S.ports[port] = {...(S.ports[port] || assigned), invert:invert.checked};
       lastSent.delete(port);
       saveSettings();
     });
@@ -850,9 +825,7 @@ async function testPort(port){
   lastSent.delete(port);
 }
 
-/* ------------------------------------------------------------------ *
- * Content switcher
- * ------------------------------------------------------------------ */
+// Content switcher
 const TAB_KEY = 'movehub-pad.tab';
 const switcherButtons = Array.from(document.querySelectorAll('.switcher button'));
 function showTab(name){
@@ -865,9 +838,7 @@ for(const btn of switcherButtons){
 }
 showTab((() => { try{ return localStorage.getItem(TAB_KEY); }catch(err){ return null; } })() || 'drive');
 
-/* ------------------------------------------------------------------ *
- * Settings wiring
- * ------------------------------------------------------------------ */
+// Settings wiring
 function bindRange(id, key, suffix, onChange){
   const input = $(id), output = $(id.replace('set','out'));
   input.value = S[key];
@@ -969,9 +940,7 @@ $('resetMap').addEventListener('click', () => {
   log('Mapping reset to the DualSense defaults.');
 });
 
-/* ------------------------------------------------------------------ *
- * Global safety hooks
- * ------------------------------------------------------------------ */
+// Global safety hooks
 addEventListener('keydown', event => {
   if(event.code === 'Space'){ event.preventDefault(); emergencyStop(); return; }
   if(event.code === 'KeyL' && hub.connected){ setLights(!lights.on); return; }
@@ -982,11 +951,10 @@ addEventListener('blur', () => { keys.clear(); if(hub.connected) stopEverything(
 addEventListener('gamepadconnected', event => log('Controller connected: ' + event.gamepad.id, 'good'));
 addEventListener('gamepaddisconnected', () => { log('Controller disconnected.', 'bad'); if(hub.connected) stopEverything('controller gone'); });
 document.addEventListener('visibilitychange', () => { if(document.hidden && hub.connected) stopEverything('page hidden'); });
+addEventListener('blur', () => { keys.clear(); if(hub.connected) stopEverything('window lost focus'); });
 addEventListener('pagehide', () => { if(hub.connected) stopEverything('page closed'); });
 
-/* ------------------------------------------------------------------ *
- * Helpers and boot
- * ------------------------------------------------------------------ */
+// Helpers and boot
 function clamp(value, low, high){ return value < low ? low : (value > high ? high : value); }
 function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
 

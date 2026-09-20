@@ -69,9 +69,9 @@ check the production build). Netlify, Vercel or any static host works just as we
 | Options | Emergency stop |
 | W / S / A / D, B, L, Space | Same, for testing on a desktop |
 
-Any pad the browser does not report as a standard mapping can be taught: the Controller tab
-samples an input for three seconds and takes whichever axis or button moved furthest, including
-triggers that idle at −1.
+Any pad the browser does not report as a standard mapping can be taught: the Pad tab samples
+an input for three seconds and takes whichever axis or button moved furthest, including triggers
+that idle at −1.
 
 ## Settings worth knowing
 
@@ -139,10 +139,10 @@ fine — it only grants the page access.
 | Connects, then drops after a second | Another app or tab owns the hub, or the hub is paired in OS Bluetooth settings. Remove it there. |
 | Sends climb, errors stay at zero, nothing moves | Wrong ports, or the write method. Turn off *Wait for write acknowledgement* in the Config tab and try again. |
 | Car spins on the spot | Both wheel ports have the same invert setting. One of them must be inverted. |
-| Safety lock never clears | A trigger idles away from zero. Teach throttle and reverse in the Controller tab. |
+| Safety lock never clears | A trigger idles away from zero. Teach throttle and reverse in the Pad tab. |
 
-Turn on *Log every packet as hex* in the Config tab before reporting anything — the Log tab shows every
-frame sent and received, and decodes the hub's error replies.
+Turn on *Log every packet as hex* in the Log tab before reporting anything — it shows every frame
+sent and received, and decodes the hub's error replies.
 
 ## Credits
 
