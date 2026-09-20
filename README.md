@@ -6,7 +6,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/JavaScript-Language?style=flat&label=Language&color=F7DF1E" alt="Language" />
   <img src="https://img.shields.io/badge/Web%20Bluetooth-Browser%20API?style=flat&label=Platform&color=7FB2E5" alt="Web Bluetooth" />
-  <img src="https://img.shields.io/badge/Build-none?style=flat&label=Build&color=2A313B" alt="No build step" />
+  <img src="https://img.shields.io/badge/Build-Vite?style=flat&label=Build&color=2454E0" alt="Vite build" />
   <img src="https://img.shields.io/website?url=https%3A%2F%2Fmsmiyels.github.io%2Fmove-hub-pad%2F&up_color=79B143&down_color=DC3B3B&logo=github&label=GitHub%20Pages&up_message=Online&down_message=Offline" alt="GitHub Pages status" />
   <img src="https://img.shields.io/badge/License-MIT-0056CC?style=flat" alt="MIT License" />
 </p>
@@ -19,7 +19,7 @@ locked, so Pybricks cannot be installed on it, and the app has no gamepad suppor
 however, still speak the plain LEGO Wireless Protocol v3 over Bluetooth Low Energy — which is
 all this page needs.
 
-One file, no build step, no dependencies, no account, nothing installed on the hub.
+A small static site (Vite, no framework), no account, nothing installed on the hub.
 
 ## What you need
 
@@ -35,20 +35,23 @@ Safari and Chrome for iOS cannot do Web Bluetooth. On iOS, Bluefy is the only ro
 ## Setup
 
 1. Fork or download this repository.
-2. In **Settings → Pages**, set the source to `Deploy from a branch`, branch `main`, folder `/root`.
-3. After a minute the page is live at `https://<user>.github.io/<repo>/`.
+2. In **Settings → Pages**, set the source to `GitHub Actions`.
+3. Push to `main` — the included workflow (`.github/workflows/deploy.yml`) builds the site with
+   Vite and deploys it. After a minute the page is live at `https://<user>.github.io/<repo>/`.
 
-Netlify, Vercel or any static host works just as well — a single `index.html` is the whole app.
+To run it locally: `npm install`, then `npm run dev` (or `npm run build && npm run preview` to
+check the production build). Netlify, Vercel or any static host works just as well — point it at
+`npm run build`, output directory `dist`.
 
 ## First run
 
 1. Pair the controller with your phone, tablet or computer the normal way, in Bluetooth settings.
 2. Open the page and **press one button on the controller**. Browsers hide a gamepad until it
-   sends its first input; the pill in the header turns green once it appears.
+   sends its first input; the badge in the header lights up once it appears.
 3. Press the green button on the hub so it blinks, then tap **Connect hub** and pick it from
    the list. If the list stays empty, tap Connect again — the page falls back from a service
    filter to a name filter to showing every device.
-4. Check the **Ports** panel. The hub reports its built-in devices on connect and they are
+4. Check the **Ports** tab. The hub reports its built-in devices on connect and they are
    assigned automatically. If nothing was detected, press *Apply known 42176 / 42214 layout*.
 5. Keep **Power limit** low for the first drive. 60% is plenty indoors.
 6. Release the triggers and centre the stick to clear the safety lock, then drive.
@@ -66,9 +69,9 @@ Netlify, Vercel or any static host works just as well — a single `index.html` 
 | Options | Emergency stop |
 | W / S / A / D, B, L, Space | Same, for testing on a desktop |
 
-Any pad the browser does not report as a standard mapping can be taught: the Controller panel
-samples an input for three seconds and takes whichever axis or button moved furthest, including
-triggers that idle at −1.
+Any pad the browser does not report as a standard mapping can be taught: the Pad tab samples
+an input for three seconds and takes whichever axis or button moved furthest, including triggers
+that idle at −1.
 
 ## Settings worth knowing
 
@@ -134,12 +137,12 @@ fine — it only grants the page access.
 | "Web Bluetooth is not available" | Safari or Chrome on iOS. Use Bluefy. |
 | The hub never appears in the picker | It is not blinking, or the CONTROL+ app still holds it. One BLE connection at a time. |
 | Connects, then drops after a second | Another app or tab owns the hub, or the hub is paired in OS Bluetooth settings. Remove it there. |
-| Sends climb, errors stay at zero, nothing moves | Wrong ports, or the write method. Turn off *Wait for write acknowledgement* in Diagnostics and try again. |
+| Sends climb, errors stay at zero, nothing moves | Wrong ports, or the write method. Turn off *Wait for write acknowledgement* in the Config tab and try again. |
 | Car spins on the spot | Both wheel ports have the same invert setting. One of them must be inverted. |
-| Safety lock never clears | A trigger idles away from zero. Teach throttle and reverse in the Controller panel. |
+| Safety lock never clears | A trigger idles away from zero. Teach throttle and reverse in the Pad tab. |
 
-Turn on *Log every packet as hex* in Diagnostics before reporting anything — the log shows every
-frame sent and received, and decodes the hub's error replies.
+Turn on *Log every packet as hex* in the Log tab before reporting anything — it shows every frame
+sent and received, and decodes the hub's error replies.
 
 ## Credits
 

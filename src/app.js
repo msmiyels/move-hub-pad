@@ -1,259 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Move Hub Pad — drive LEGO Technic 42214 with a DualSense</title>
-<meta name="description" content="Drive the LEGO Technic Move Hub (sets 42176, 42214, 42239) with a PlayStation DualSense or any other gamepad, straight from the browser over Web Bluetooth.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  color-scheme: dark;
-  --ink:#0E1013;
-  --panel:#161A20;
-  --panel-2:#1D222A;
-  --line:#2A313B;
-  --text:#E8EBEF;
-  --muted:#8A93A0;
-  --go:#79B143;
-  --warn:#E8B02A;
-  --stop:#DC3B3B;
-  --link:#7FB2E5;
-  --radius:10px;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-*,*::before,*::after{box-sizing:inherit}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{
-  margin:0;
-  background:var(--ink);
-  color:var(--text);
-  font-family:"Barlow Semi Condensed","Roboto Condensed",system-ui,-apple-system,sans-serif;
-  font-size:17px;
-  line-height:1.45;
-  -webkit-text-size-adjust:100%;
-  -webkit-user-select:none;
-  user-select:none;
-  overscroll-behavior:none;
-}
-.wrap{max-width:760px;margin:0 auto;padding:12px 14px 40px}
-
-/* ---------- status strip ---------- */
-.strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.mark{font-weight:700;font-size:20px;letter-spacing:.02em;margin-right:auto}
-.mark span{color:var(--muted);font-weight:500}
-.pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);
-  border-radius:999px;padding:3px 11px;font-size:14px;color:var(--muted);white-space:nowrap}
-.pill i{width:8px;height:8px;border-radius:50%;background:#4A525E;display:block}
-.pill.on{color:var(--text)}
-.pill.on i{background:var(--go)}
-.pill.warn i{background:var(--warn)}
-.pill.bad i{background:var(--stop)}
-
-/* ---------- cluster (hero) ---------- */
-.cluster{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 18px}
-.state{font-size:19px;font-weight:600;margin:0 0 14px;display:flex;align-items:baseline;gap:8px}
-.state small{font-size:15px;font-weight:400;color:var(--muted)}
-.state.lock{color:var(--warn)}
-.state.live{color:var(--go)}
-.state.err{color:var(--stop)}
-
-.steer{position:relative;height:30px;background:var(--panel-2);border-radius:4px;overflow:hidden;margin-bottom:6px}
-.steer .fill{position:absolute;top:0;bottom:0;left:50%;width:0;background:var(--link);opacity:.85}
-.steer .tick{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:var(--line)}
-.meter{position:relative;height:22px;background:var(--panel-2);border-radius:4px;overflow:hidden;margin-bottom:6px}
-.meter .fill{position:absolute;top:0;bottom:0;left:0;width:0;background:var(--go)}
-.meter.brake .fill{background:var(--stop)}
-.rowlabel{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:3px}
-.rowlabel b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
-
-/* ---------- actions ---------- */
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
-button{font:inherit;font-weight:600;color:var(--text);background:var(--panel-2);border:1px solid var(--line);
-  border-radius:var(--radius);padding:12px 14px;cursor:pointer;touch-action:manipulation}
-button:active{transform:translateY(1px)}
-button:focus-visible{outline:2px solid var(--link);outline-offset:2px}
-button[disabled]{opacity:.45;cursor:default}
-button.primary{background:var(--go);border-color:var(--go);color:#0D1408}
-button.stop{background:var(--stop);border-color:var(--stop);color:#fff;font-size:21px;letter-spacing:.08em}
-button.ghost{background:transparent}
-
-/* ---------- panels ---------- */
-details{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-top:10px}
-summary{padding:12px 14px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px}
-details[open] summary::after{content:"–"}
-.body{padding:0 14px 14px;border-top:1px solid var(--line);padding-top:12px}
-.field{display:flex;align-items:center;gap:12px;margin:10px 0}
-.field label{flex:1;font-size:16px}
-.field label em{display:block;font-style:normal;font-size:13px;color:var(--muted);line-height:1.3}
-.field output{min-width:52px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-input[type=range]{flex:0 0 150px;accent-color:var(--go)}
-input[type=checkbox]{width:22px;height:22px;accent-color:var(--go)}
-select{font:inherit;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
-.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.btnrow button{padding:9px 12px;font-size:15px;font-weight:500}
-.note{font-size:14px;color:var(--muted);margin:8px 0 0}
-.note a{color:var(--link)}
-table{width:100%;border-collapse:collapse;font-size:15px}
-th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-th{color:var(--muted);font-weight:500}
-td.num{font-variant-numeric:tabular-nums;color:var(--muted)}
-#log{background:#0A0C0F;border:1px solid var(--line);border-radius:6px;padding:10px;height:220px;overflow:auto;
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5;white-space:pre-wrap;
-  color:#BFC7D2;-webkit-user-select:text;user-select:text}
-#log .t{color:#5C6672}
-#log .bad{color:#F0827F}
-#log .good{color:#9ED26A}
-#rawInput{background:#0A0C0F;border:1px solid var(--line);border-radius:6px;padding:10px;margin:8px 0 0;
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5;color:#BFC7D2;
-  white-space:pre-wrap;-webkit-user-select:text;user-select:text}
-#rawInput[hidden]{display:none}
-@media (min-width:620px){ .actions{grid-template-columns:repeat(4,1fr)} }
-@media (prefers-reduced-motion:no-preference){ .meter .fill,.steer .fill{transition:width .06s linear,left .06s linear} }
-</style>
-</head>
-<body>
-<div class="wrap">
-
-<header class="strip">
-  <div class="mark">Move Hub Pad <span>· 42176 / 42214 / 42239</span></div>
-  <span class="pill" id="pillHub"><i></i><span>Hub offline</span></span>
-  <span class="pill" id="pillPad"><i></i><span>No controller</span></span>
-  <span class="pill" id="pillBat"><i></i><span>Battery —</span></span>
-</header>
-
-<section class="cluster">
-  <p class="state" id="stateLine">Not connected <small id="stateHint">Pair your controller in iOS Bluetooth settings first.</small></p>
-
-  <div class="rowlabel"><span>Steering</span><b id="valSteer">0</b></div>
-  <div class="steer"><div class="fill" id="barSteer"></div><div class="tick"></div></div>
-
-  <div class="rowlabel"><span>Throttle</span><b id="valThrottle">0</b></div>
-  <div class="meter"><div class="fill" id="barThrottle"></div></div>
-
-  <div class="rowlabel"><span>Reverse</span><b id="valBrake">0</b></div>
-  <div class="meter brake"><div class="fill" id="barBrake"></div></div>
-</section>
-
-<div class="actions">
-  <button class="primary" id="btnConnect">Connect hub</button>
-  <button class="stop" id="btnStop">STOP</button>
-  <button class="ghost" id="btnLights">Lights off</button>
-  <button class="ghost" id="btnDisconnect" disabled>Disconnect</button>
-</div>
-
-<details id="panelPad">
-  <summary>Controller</summary>
-  <div class="body">
-    <p class="note" id="padInfo">Press any button on the controller once — browsers only report a gamepad after its first input.</p>
-    <div class="field"><label>Controller in use<em>Some mice and keyboards announce themselves as gamepads too</em></label>
-      <select id="padPick"><option value="">Choose automatically</option></select></div>
-    <div class="field"><label>Throttle and reverse on<em>Triggers are finer, the stick lets one thumb do everything</em></label>
-      <select id="setThrottleMode">
-        <option value="triggers">R2 and L2</option>
-        <option value="stick">Right stick, up and down</option>
-        <option value="both">Both at once</option>
-      </select></div>
-    <div class="field"><label>Push stick up to go forward</label><input type="checkbox" id="setStickInvert"></div>
-    <div class="field"><label>Deadzone<em>Ignore small stick movement around centre</em></label>
-      <input type="range" id="setDeadzone" min="0" max="30" step="1"><output id="outDeadzone"></output></div>
-    <div class="field"><label>Steering curve<em>Higher values make the centre less twitchy</em></label>
-      <input type="range" id="setExpo" min="0" max="80" step="5"><output id="outExpo"></output></div>
-    <p class="note">Default mapping: R2 accelerates, L2 reverses, left stick steers, Square brakes, Circle toggles the lights, Options stops. If an input does nothing, teach it here.</p>
-    <div class="btnrow">
-      <button id="learnThrottle">Teach throttle</button>
-      <button id="learnBrake">Teach reverse</button>
-      <button id="learnDrive">Teach drive stick</button>
-      <button id="learnSteer">Teach steering</button>
-      <button id="learnHandbrake">Teach brake button</button>
-      <button id="learnLights">Teach lights button</button>
-      <button id="learnStop">Teach stop button</button>
-      <button id="resetMap">Reset mapping</button>
-    </div>
-    <div class="field"><label>Show raw controller values<em>Live axis and button readout, for checking what actually moves</em></label>
-      <input type="checkbox" id="setShowRaw"></div>
-    <pre id="rawInput" hidden></pre>
-    <p class="note" id="mapInfo"></p>
-  </div>
-</details>
-
-<details id="panelDrive">
-  <summary>Driving</summary>
-  <div class="body">
-    <div class="field"><label>Power limit<em>Start low. 100% is quick enough to hurt the gears on a hard stop.</em></label>
-      <input type="range" id="setMaxPower" min="20" max="100" step="5"><output id="outMaxPower"></output></div>
-    <div class="field"><label>Turn assist<em>Slows the inner wheel while steering, so the car actually turns</em></label>
-      <input type="range" id="setTurnAssist" min="0" max="80" step="5"><output id="outTurnAssist"></output></div>
-    <div class="field"><label>Steering force<em>Torque against the mechanical end stops</em></label>
-      <input type="range" id="setSteerTorque" min="20" max="100" step="5"><output id="outSteerTorque"></output></div>
-    <div class="field"><label>Ease off when held<em>Halves the force 0.4 s after the steering stops moving</em></label>
-      <input type="checkbox" id="setSteerHold"></div>
-    <div class="field"><label>Reverse drive direction</label><input type="checkbox" id="setInvertDrive"></div>
-    <div class="field"><label>Reverse steering direction</label><input type="checkbox" id="setInvertSteer"></div>
-    <div class="field"><label>Swap left and right wheel<em>Use if the car turns the wrong way into corners</em></label>
-      <input type="checkbox" id="setSwapSides"></div>
-    <div class="field"><label>Light brightness</label>
-      <input type="range" id="setLightBrightness" min="10" max="100" step="5"><output id="outLightBrightness"></output></div>
-    <div class="field"><label>Hub button colour</label>
-      <select id="setHubColour">
-        <option value="-1">Leave alone</option><option value="0">Off</option><option value="1">Pink</option>
-        <option value="3">Blue</option><option value="6">Green</option><option value="7">Yellow</option>
-        <option value="8">Orange</option><option value="9">Red</option><option value="10">White</option>
-      </select></div>
-  </div>
-</details>
-
-<details id="panelPorts">
-  <summary>Ports</summary>
-  <div class="body">
-    <p class="note">The hub reports its built-in motors on connect. On the Porsche and the Lamborghini these are ports 50 and 51 (wheels), 52 (steering) and 53 (headlights) — the two wheel motors are built facing each other, so one of them runs inverted.</p>
-    <table><thead><tr><th>Port</th><th>Device</th><th>Role</th><th>Invert</th><th></th></tr></thead>
-    <tbody id="portRows"><tr><td colspan="5" class="num">Nothing detected yet.</td></tr></tbody></table>
-    <div class="btnrow">
-      <button id="btnKnownLayout">Apply known 42176 / 42214 layout</button>
-      <button id="btnClearPorts">Clear assignments</button>
-    </div>
-  </div>
-</details>
-
-<details id="panelDiag">
-  <summary>Diagnostics</summary>
-  <div class="body">
-    <div class="field"><label>Wait for write acknowledgement<em>Turn off if commands are accepted but nothing moves</em></label>
-      <input type="checkbox" id="setWithResponse"></div>
-    <div class="field"><label>Reconnect automatically</label><input type="checkbox" id="setAutoReconnect"></div>
-    <div class="field"><label>Log every packet as hex</label><input type="checkbox" id="setHexLog"></div>
-    <div class="btnrow">
-      <button id="btnHubInfo">Request hub info</button>
-      <button id="btnCopyLog">Copy log</button>
-      <button id="btnClearLog">Clear log</button>
-    </div>
-    <p class="note" id="txStats">Sent 0 · failed 0</p>
-  </div>
-</details>
-
-<details id="panelLog" open>
-  <summary>Log</summary>
-  <div class="body"><div id="log"></div></div>
-</details>
-
-<p class="note">Keyboard also works for testing on a desktop: W / S drive, A / D steer, B brakes, L toggles the lights, Space stops.
-Not affiliated with the LEGO Group. LEGO® is a trademark of the LEGO Group.</p>
-
-</div>
-
-<script>
-'use strict';
-
-/* ------------------------------------------------------------------ *
- * LEGO Wireless Protocol v3 — constants
- * ------------------------------------------------------------------ */
+// LEGO Wireless Protocol v3 — constants
 const SERVICE_UUID = '00001623-1212-efde-1623-785feabcd123';
 const CHAR_UUID    = '00001624-1212-efde-1623-785feabcd123';
 
@@ -283,9 +28,9 @@ const ERROR_CODES = {
   0x07:'overcurrent', 0x08:'internal error'
 };
 
-/* ------------------------------------------------------------------ *
- * Settings
- * ------------------------------------------------------------------ */
+// Settings
+const $ = id => document.getElementById(id);
+
 const STORE_KEY = 'movehub-pad.v1';
 const DEFAULTS = {
   maxPower:60, turnAssist:45, steerTorque:55, steerHold:true,
@@ -322,10 +67,8 @@ function saveSettings(){
 }
 const S = loadSettings();
 
-/* ------------------------------------------------------------------ *
- * Log
- * ------------------------------------------------------------------ */
-const logEl = document.getElementById('log');
+// Log
+const logEl = $('log');
 const logLines = [];
 function log(text, kind){
   const stamp = new Date().toTimeString().slice(0,8);
@@ -342,15 +85,12 @@ function log(text, kind){
 }
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2,'0')).join(' ');
 
-/* ------------------------------------------------------------------ *
- * Write queue
- *
- * One GATT write may be in flight at a time, otherwise the browser
- * throws "GATT operation already in progress". Commands are keyed, so a
- * newer value for the same port replaces a queued older one instead of
- * piling up behind it, and each key is rate limited to stay inside the
- * BLE connection interval.
- * ------------------------------------------------------------------ */
+// Write queue
+// One GATT write may be in flight at a time, otherwise the browser
+// throws "GATT operation already in progress". Commands are keyed, so a
+// newer value for the same port replaces a queued older one instead of
+// piling up behind it, and each key is rate limited to stay inside the
+// BLE connection interval.
 const tx = {
   char:null, pending:new Map(), last:new Map(), running:false, timer:0,
   sent:0, failed:0, canWriteWithoutResponse:false,
@@ -414,9 +154,7 @@ const tx = {
   }
 };
 
-/* ------------------------------------------------------------------ *
- * Frame builders
- * ------------------------------------------------------------------ */
+// Frame builders
 const frame = {
   motorPower:(port, power) => new Uint8Array([0x08,0x00,0x81,port,0x11,0x51,0x00, power & 0xff]),
   headlights:(port, mask, brightness) => new Uint8Array([0x09,0x00,0x81,port,0x11,0x51,0x00, mask, brightness]),
@@ -425,9 +163,7 @@ const frame = {
   hubAction:(action) => new Uint8Array([0x04,0x00,0x02, action])
 };
 
-/* ------------------------------------------------------------------ *
- * Hub connection
- * ------------------------------------------------------------------ */
+// Hub connection
 const hub = {
   device:null, server:null, connected:false, sendOnly:false,
   ports:new Map(), battery:null, manualDisconnect:false, scanStage:0, reconnects:0
@@ -455,9 +191,9 @@ async function connectHub(){
     return;
   }
   hub.scanStage = 0;
+  if(device !== hub.device) device.addEventListener('gattserverdisconnected', () => onLinkLost('hub closed the connection'));
   hub.device = device;
   hub.manualDisconnect = false;
-  device.addEventListener('gattserverdisconnected', () => onLinkLost('hub closed the connection'));
   await openLink(device);
 }
 
@@ -473,6 +209,7 @@ async function openLink(device){
       hub.sendOnly = true;
       try{
         await characteristic.startNotifications();
+        characteristic.removeEventListener('characteristicvaluechanged', onNotification);
         characteristic.addEventListener('characteristicvaluechanged', onNotification);
         hub.sendOnly = false;
       }catch(err){
@@ -500,17 +237,21 @@ async function openLink(device){
   }
 }
 
-function onLinkLost(reason){
-  if(!hub.connected) return;
+function closeLink(reason){
   hub.connected = false;
   hub.ports.clear();
   tx.detach();
-  safety.lock('disconnected');
   lights.on = false;
   lastSent.clear();
-  log('Connection lost — ' + reason, 'bad');
+  safety.lock(reason);
   refreshUI();
   renderPorts();
+}
+
+function onLinkLost(reason){
+  if(!hub.connected) return;
+  closeLink('disconnected');
+  log('Connection lost — ' + reason, 'bad');
   if(S.autoReconnect && !hub.manualDisconnect && hub.device && hub.reconnects < 5){
     hub.reconnects++;
     log('Reconnecting (' + hub.reconnects + '/5)…');
@@ -526,20 +267,15 @@ async function disconnectHub(){
     tx.send('bye', frame.hubAction(0x02), {urgent:true});
     await sleep(150);
   }
-  tx.detach();
   try{ if(hub.server && hub.server.connected) hub.server.disconnect(); }catch(err){ /* already gone */ }
-  hub.connected = false;
-  hub.ports.clear();
-  refreshUI();
-  renderPorts();
+  closeLink('disconnected');
   log('Disconnected.');
 }
 
-/* ------------------------------------------------------------------ *
- * Incoming messages
- * ------------------------------------------------------------------ */
+// Incoming messages
 function onNotification(event){
-  const data = new Uint8Array(event.target.value.buffer);
+  const value = event.target.value;
+  const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
   if(S.hexLog) log('RX  ' + hex(data));
   switch(data[2]){
     case 0x01: onHubProperty(data); break;
@@ -589,9 +325,7 @@ function onHubError(data){
   log('Hub rejected command 0x' + command.toString(16) + ': ' + (ERROR_CODES[code] || ('code 0x' + code.toString(16))), 'bad');
 }
 
-/* ------------------------------------------------------------------ *
- * Port helpers
- * ------------------------------------------------------------------ */
+// Port helpers
 function portsWithRole(role){
   const found = [];
   for(const port of Object.keys(S.ports).map(Number).sort((a,b) => a - b)){
@@ -613,9 +347,7 @@ function clampPower(power){
   return clamp(Math.round(power), -100, 100);
 }
 
-/* ------------------------------------------------------------------ *
- * Driving
- * ------------------------------------------------------------------ */
+// Driving
 const lastSent = new Map();
 const lights = {on:false};
 let steerLastValue = 0, steerLastChange = 0;
@@ -665,7 +397,7 @@ function setLights(on){
     if(!mayWrite(port)) continue;
     tx.send('l' + port, frame.headlights(port, HEADLIGHT_MASK, brightness), {urgent:true});
   }
-  document.getElementById('btnLights').textContent = on ? 'Lights on' : 'Lights off';
+  refreshUI();
 }
 
 function applyHubColour(){
@@ -685,6 +417,7 @@ function stopEverything(reason){
     lastSent.set(port, 0);
     sendMotor(port, 0, {urgent:true});
   }
+  // brake first, then let the motors coast so they are not held under current
   setTimeout(() => {
     for(const port of portsWithRole('drive')){
       lastSent.set(port, 0);
@@ -694,9 +427,7 @@ function stopEverything(reason){
   safety.lock(reason || 'stopped');
 }
 
-/* ------------------------------------------------------------------ *
- * Safety lock — no output until every control sits at rest
- * ------------------------------------------------------------------ */
+// Safety lock — no output until every control sits at rest
 const safety = {
   locked:true, reason:'not connected',
   lock(reason){ this.locked = true; this.reason = reason; },
@@ -713,9 +444,7 @@ const safety = {
   }
 };
 
-/* ------------------------------------------------------------------ *
- * Gamepad and keyboard input
- * ------------------------------------------------------------------ */
+// Gamepad and keyboard input
 const keys = new Set();
 let learning = null;
 
@@ -736,22 +465,19 @@ function currentGamepad(){
   return pads.find(pad => pad.mapping === 'standard') || pads.find(looksLikeGamepad) || pads[0];
 }
 
+// Older browsers report gamepad buttons as plain numbers instead of GamepadButton objects
+const buttonValue = button => (typeof button === 'object' ? button.value : button);
+
 function readBinding(pad, binding){
   if(!pad || !binding) return 0;
   if(binding.kind === 'axis') return pad.axes[binding.index] || 0;
   const button = pad.buttons[binding.index];
-  if(!button) return 0;
-  return typeof button === 'object' ? button.value : button;
+  return button ? buttonValue(button) : 0;
 }
-function readUnipolar(pad, binding){
+// Scales a raw reading by its taught rest position and span; low is 0 for triggers, -1 for sticks
+function readScaled(pad, binding, low){
   const raw = readBinding(pad, binding);
-  const span = binding.span || 1;
-  return clamp((raw - (binding.rest || 0)) / span, 0, 1);
-}
-function readBipolar(pad, binding){
-  const raw = readBinding(pad, binding);
-  const span = binding.span || 1;
-  return clamp((raw - (binding.rest || 0)) / span, -1, 1);
+  return clamp((raw - (binding.rest || 0)) / (binding.span || 1), low, 1);
 }
 function pressed(pad, binding){
   if(!pad || !binding) return false;
@@ -770,20 +496,19 @@ function shapeAxis(value){
 }
 
 function readInput(pad){
-  let throttle = 0, brake = 0;
   const useStick = S.throttleMode === 'stick' || S.throttleMode === 'both';
   const useTriggers = S.throttleMode === 'triggers' || S.throttleMode === 'both';
   let value = 0;
   if(useStick){
-    value = shapeAxis(readBipolar(pad, S.map.drive)) * (S.stickInvert ? -1 : 1);
+    value = shapeAxis(readScaled(pad, S.map.drive, -1)) * (S.stickInvert ? -1 : 1);
   }
   if(useTriggers){
-    const triggers = readUnipolar(pad, S.map.throttle) - readUnipolar(pad, S.map.brake);
+    const triggers = readScaled(pad, S.map.throttle, 0) - readScaled(pad, S.map.brake, 0);
     if(Math.abs(triggers) > Math.abs(value)) value = triggers;
   }
-  throttle = Math.max(value, 0);
-  brake = Math.max(-value, 0);
-  let steer = shapeAxis(readBipolar(pad, S.map.steer));
+  let throttle = Math.max(value, 0);
+  let brake = Math.max(-value, 0);
+  let steer = shapeAxis(readScaled(pad, S.map.steer, -1));
   const brakeHold = pressed(pad, S.map.handbrake) || keys.has('KeyB');
   if(keys.has('KeyW')) throttle = Math.max(throttle, 1);
   if(keys.has('KeyS')) brake = Math.max(brake, 1);
@@ -792,21 +517,25 @@ function readInput(pad){
   return {throttle, brake, steer, brakeHold};
 }
 
-/* --- teaching an input ------------------------------------------- */
+// Teaching an input
 function startLearning(target, label){
   const pad = currentGamepad();
-  if(!pad){ log('No controller detected — press a button on it first.', 'bad'); return; }
+  if(!pad){
+    log('No controller detected — press a button on it first.', 'bad');
+    $('map' + cap(target)).textContent = 'No controller';
+    setTimeout(describeMapping, 2000);
+    return;
+  }
+  setTeachButton(target, true);
   const isButtonOnly = (target === 'lights' || target === 'stop' || target === 'handbrake');
   learning = {
     target, label, isButtonOnly, until: performance.now() + 3000,
     axes: pad.axes.map(v => ({rest:v, min:v, max:v})),
-    buttons: pad.buttons.map(b => ({rest:valueOf(b), min:valueOf(b), max:valueOf(b)}))
+    buttons: pad.buttons.map(b => ({rest:buttonValue(b), min:buttonValue(b), max:buttonValue(b)}))
   };
   log('Teaching ' + label + ': move it fully for three seconds.');
   setState('Teaching ' + label, 'Move it all the way, then release.', 'lock');
 }
-const valueOf = b => (typeof b === 'object' ? b.value : b);
-
 function stepLearning(pad){
   if(!learning || !pad) return;
   pad.axes.forEach((value, i) => {
@@ -818,7 +547,7 @@ function stepLearning(pad){
   pad.buttons.forEach((button, i) => {
     const slot = learning.buttons[i];
     if(!slot) return;
-    const value = valueOf(button);
+    const value = buttonValue(button);
     slot.min = Math.min(slot.min, value);
     slot.max = Math.max(slot.max, value);
   });
@@ -838,6 +567,7 @@ function stepLearning(pad){
 
   const target = learning.target, label = learning.label;
   learning = null;
+  setTeachButton(target, false);
 
   if(!best || best.range < 0.3){
     log('Nothing moved far enough — mapping for ' + label + ' left unchanged.', 'bad');
@@ -860,9 +590,7 @@ function stepLearning(pad){
   refreshUI();
 }
 
-/* ------------------------------------------------------------------ *
- * Main loop
- * ------------------------------------------------------------------ */
+// Main loop
 let previousLightsButton = false, previousStopButton = false;
 
 function loop(){
@@ -898,21 +626,20 @@ function emergencyStop(){
   log('Emergency stop.', 'bad');
 }
 
-/* ------------------------------------------------------------------ *
- * UI
- * ------------------------------------------------------------------ */
-const $ = id => document.getElementById(id);
-
+// UI
+const telemetry = {
+  valSteer:$('valSteer'), barSteer:$('barSteer'),
+  valThrottle:$('valThrottle'), barThrottle:$('barThrottle'),
+  valBrake:$('valBrake'), barBrake:$('barBrake')
+};
 function showTelemetry(input){
   const steerPercent = Math.round(input.steer * 100);
-  $('valSteer').textContent = steerPercent;
-  const bar = $('barSteer');
-  bar.style.width = Math.abs(steerPercent / 2) + '%';
-  bar.style.left = (steerPercent >= 0 ? 50 : 50 + steerPercent / 2) + '%';
-  $('valThrottle').textContent = Math.round(input.throttle * 100);
-  $('barThrottle').style.width = (input.throttle * 100) + '%';
-  $('valBrake').textContent = Math.round(input.brake * 100);
-  $('barBrake').style.width = (input.brake * 100) + '%';
+  telemetry.valSteer.textContent = steerPercent;
+  telemetry.barSteer.style.transform = 'scaleX(' + (steerPercent / 100) + ')';
+  telemetry.valThrottle.textContent = Math.round(input.throttle * 100);
+  telemetry.barThrottle.style.transform = 'scaleX(' + input.throttle + ')';
+  telemetry.valBrake.textContent = Math.round(input.brake * 100);
+  telemetry.barBrake.style.transform = 'scaleX(' + input.brake + ')';
 }
 
 let rawNextUpdate = 0;
@@ -924,7 +651,7 @@ function renderRaw(pad, input){
   if(!pad){ box.textContent = 'No controller in use.'; return; }
   const axes = pad.axes.map((value, index) => 'axis ' + index + ': ' + value.toFixed(2)).join('   ');
   const active = pad.buttons
-    .map((button, index) => ({index, value: typeof button === 'object' ? button.value : button}))
+    .map((button, index) => ({index, value:buttonValue(button)}))
     .filter(entry => entry.value > 0.05)
     .map(entry => 'button ' + entry.index + ': ' + entry.value.toFixed(2)).join('   ');
   box.textContent =
@@ -998,18 +725,20 @@ function padName(pad){
 
 function refreshUI(){
   const pill = $('pillHub');
-  pill.className = 'pill ' + (hub.connected ? 'on' : 'bad');
+  pill.className = 'pill ' + (hub.connected ? 'on' : 'warn');
   pill.querySelector('span').textContent = hub.connected
     ? (hub.sendOnly ? 'Hub (send-only)' : 'Hub connected')
     : 'Hub offline';
 
   const battery = $('pillBat');
-  battery.className = 'pill' + (hub.battery == null ? '' : (hub.battery < 20 ? ' bad' : ' on'));
+  battery.className = 'pill' + (hub.battery == null ? ' warn' : (hub.battery < 20 ? ' warn' : ' on'));
   battery.querySelector('span').textContent = hub.battery == null ? 'Battery —' : 'Battery ' + hub.battery + '%';
 
   $('btnConnect').disabled = hub.connected;
   $('btnConnect').textContent = hub.connected ? 'Connected' : 'Connect hub';
   $('btnDisconnect').disabled = !hub.connected;
+  $('btnLights').disabled = !hub.connected;
+  $('btnLights').textContent = lights.on ? 'Lights on' : 'Lights off';
   if(!hub.connected) setState('Not connected', 'Press the green hub button until it blinks, then connect.');
 }
 
@@ -1017,19 +746,18 @@ function updateTxStats(){
   $('txStats').textContent = 'Sent ' + tx.sent + ' · failed ' + tx.failed;
 }
 
+const cap = text => text[0].toUpperCase() + text.slice(1);
 function describeMapping(){
   const describe = (binding) => binding ? binding.kind + ' ' + binding.index : '—';
-  const triggers = 'Throttle: ' + describe(S.map.throttle) + ' · Reverse: ' + describe(S.map.brake);
-  const stick = 'Drive: ' + describe(S.map.drive);
-  const drive = S.throttleMode === 'stick' ? stick
-    : S.throttleMode === 'both' ? stick + ' · ' + triggers
-    : triggers;
-  $('mapInfo').textContent =
-    drive +
-    ' · Steering: ' + describe(S.map.steer) +
-    ' · Brake: button ' + S.map.handbrake.index +
-    ' · Lights: button ' + S.map.lights.index +
-    ' · Stop: button ' + S.map.stop.index;
+  for(const target of Object.keys(S.map)){
+    const output = $('map' + cap(target));
+    if(output) output.textContent = describe(S.map[target]);
+  }
+}
+function setTeachButton(target, active){
+  const button = $('learn' + cap(target));
+  button.disabled = active;
+  button.textContent = active ? 'Move it…' : 'Teach';
 }
 
 function renderPorts(){
@@ -1062,7 +790,7 @@ function renderPorts(){
       select.append(option);
     }
     select.addEventListener('change', () => {
-      S.ports[port] = {role:select.value, invert:assigned.invert};
+      S.ports[port] = {...(S.ports[port] || assigned), role:select.value};
       lastSent.delete(port);
       saveSettings();
     });
@@ -1073,7 +801,7 @@ function renderPorts(){
     invert.type = 'checkbox';
     invert.checked = !!assigned.invert;
     invert.addEventListener('change', () => {
-      S.ports[port] = {role:S.ports[port] ? S.ports[port].role : 'none', invert:invert.checked};
+      S.ports[port] = {...(S.ports[port] || assigned), invert:invert.checked};
       lastSent.delete(port);
       saveSettings();
     });
@@ -1097,9 +825,20 @@ async function testPort(port){
   lastSent.delete(port);
 }
 
-/* ------------------------------------------------------------------ *
- * Settings wiring
- * ------------------------------------------------------------------ */
+// Content switcher
+const TAB_KEY = 'movehub-pad.tab';
+const switcherButtons = Array.from(document.querySelectorAll('.switcher button'));
+function showTab(name){
+  for(const btn of switcherButtons) btn.setAttribute('aria-selected', String(btn.dataset.panel === name));
+  for(const panel of document.querySelectorAll('.panel')) panel.hidden = panel.dataset.panel !== name;
+  try{ localStorage.setItem(TAB_KEY, name); }catch(err){ /* private mode */ }
+}
+for(const btn of switcherButtons){
+  btn.addEventListener('click', () => showTab(btn.dataset.panel));
+}
+showTab((() => { try{ return localStorage.getItem(TAB_KEY); }catch(err){ return null; } })() || 'drive');
+
+// Settings wiring
 function bindRange(id, key, suffix, onChange){
   const input = $(id), output = $(id.replace('set','out'));
   input.value = S[key];
@@ -1201,9 +940,7 @@ $('resetMap').addEventListener('click', () => {
   log('Mapping reset to the DualSense defaults.');
 });
 
-/* ------------------------------------------------------------------ *
- * Global safety hooks
- * ------------------------------------------------------------------ */
+// Global safety hooks
 addEventListener('keydown', event => {
   if(event.code === 'Space'){ event.preventDefault(); emergencyStop(); return; }
   if(event.code === 'KeyL' && hub.connected){ setLights(!lights.on); return; }
@@ -1214,11 +951,10 @@ addEventListener('blur', () => { keys.clear(); if(hub.connected) stopEverything(
 addEventListener('gamepadconnected', event => log('Controller connected: ' + event.gamepad.id, 'good'));
 addEventListener('gamepaddisconnected', () => { log('Controller disconnected.', 'bad'); if(hub.connected) stopEverything('controller gone'); });
 document.addEventListener('visibilitychange', () => { if(document.hidden && hub.connected) stopEverything('page hidden'); });
+addEventListener('blur', () => { keys.clear(); if(hub.connected) stopEverything('window lost focus'); });
 addEventListener('pagehide', () => { if(hub.connected) stopEverything('page closed'); });
 
-/* ------------------------------------------------------------------ *
- * Helpers and boot
- * ------------------------------------------------------------------ */
+// Helpers and boot
 function clamp(value, low, high){ return value < low ? low : (value > high ? high : value); }
 function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
 
@@ -1232,6 +968,3 @@ renderPorts();
 refreshUI();
 updateTxStats();
 requestAnimationFrame(loop);
-</script>
-</body>
-</html>

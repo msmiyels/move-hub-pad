@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Move Hub Pad — drive LEGO Technic 42214 with a DualSense</title>
+<meta name="description" content="Drive the LEGO Technic Move Hub (sets 42176, 42214, 42239) with a PlayStation DualSense or any other gamepad, straight from the browser over Web Bluetooth.">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="strip">
+  <div class="mark">Move Hub Pad</div>
+  <div class="pillrow">
+    <span class="pill" id="pillHub"><span>Hub offline</span></span>
+    <span class="pill" id="pillPad"><span>No controller</span></span>
+    <span class="pill" id="pillBat"><span>Battery —</span></span>
+  </div>
+</header>
+
+<nav class="switcher" role="tablist" aria-label="Sections">
+  <button type="button" role="tab" data-panel="drive" aria-selected="true">Drive</button>
+  <button type="button" role="tab" data-panel="controller" aria-selected="false">Pad</button>
+  <button type="button" role="tab" data-panel="ports" aria-selected="false">Ports</button>
+  <button type="button" role="tab" data-panel="config" aria-selected="false">Config</button>
+  <button type="button" role="tab" data-panel="log" aria-selected="false">Log</button>
+</nav>
+
+<main class="panels">
+
+  <section class="panel" id="panel-drive" data-panel="drive">
+    <section class="cluster">
+      <p class="state" id="stateLine">Not connected <small id="stateHint">Press the green hub button until it blinks, then connect.</small></p>
+
+      <div class="rowlabel"><span>Steering</span><b id="valSteer">0</b></div>
+      <div class="steer"><div class="fill" id="barSteer"></div><div class="tick"></div></div>
+
+      <div class="rowlabel"><span>Throttle</span><b id="valThrottle">0</b></div>
+      <div class="meter"><div class="fill" id="barThrottle"></div></div>
+
+      <div class="rowlabel"><span>Reverse</span><b id="valBrake">0</b></div>
+      <div class="meter brake"><div class="fill" id="barBrake"></div></div>
+    </section>
+
+    <div class="actions">
+      <button class="primary" id="btnConnect">Connect hub</button>
+      <button class="stop" id="btnStop">STOP</button>
+      <button class="ghost" id="btnLights">Lights off</button>
+      <button class="ghost" id="btnDisconnect" disabled>Disconnect</button>
+    </div>
+
+    <p class="note kbd">Keyboard also works for testing on a desktop: W / S drive, A / D steer, B brakes, L toggles the lights, Space stops.</p>
+  </section>
+
+  <section class="panel" id="panel-controller" data-panel="controller" hidden>
+    <div class="group">
+      <h2>Controller</h2>
+      <p class="note" id="padInfo">Press any button on the controller once — browsers only report a gamepad after its first input.</p>
+      <div class="field"><label for="padPick">Controller in use<em>Some mice and keyboards announce themselves as gamepads too</em></label>
+        <select id="padPick"><option value="">Choose automatically</option></select></div>
+      <div class="field"><label for="setThrottleMode">Throttle and reverse on<em>Triggers are finer, the stick lets one thumb do everything</em></label>
+        <select id="setThrottleMode">
+          <option value="triggers">R2 and L2</option>
+          <option value="stick">Right stick, up and down</option>
+          <option value="both">Both at once</option>
+        </select></div>
+      <div class="field"><label for="setStickInvert">Push stick up to go forward</label><input type="checkbox" id="setStickInvert"></div>
+      <div class="field"><label for="setDeadzone">Deadzone<em>Ignore small stick movement around centre</em></label>
+        <input type="range" id="setDeadzone" min="0" max="30" step="1"><output id="outDeadzone"></output></div>
+      <div class="field"><label for="setExpo">Steering curve<em>Higher values make the centre less twitchy</em></label>
+        <input type="range" id="setExpo" min="0" max="80" step="5"><output id="outExpo"></output></div>
+    </div>
+    <div class="group">
+      <h2>Mapping</h2>
+      <p class="note">Default mapping: R2 accelerates, L2 reverses, left stick steers, Square brakes, Circle toggles the lights, Options stops. If an input does nothing, teach it here.</p>
+      <div class="field"><label for="learnThrottle">Throttle</label><output id="mapThrottle"></output><button id="learnThrottle">Teach</button></div>
+      <div class="field"><label for="learnBrake">Reverse</label><output id="mapBrake"></output><button id="learnBrake">Teach</button></div>
+      <div class="field"><label for="learnDrive">Drive stick</label><output id="mapDrive"></output><button id="learnDrive">Teach</button></div>
+      <div class="field"><label for="learnSteer">Steering</label><output id="mapSteer"></output><button id="learnSteer">Teach</button></div>
+      <div class="field"><label for="learnHandbrake">Brake button</label><output id="mapHandbrake"></output><button id="learnHandbrake">Teach</button></div>
+      <div class="field"><label for="learnLights">Lights button</label><output id="mapLights"></output><button id="learnLights">Teach</button></div>
+      <div class="field"><label for="learnStop">Stop button</label><output id="mapStop"></output><button id="learnStop">Teach</button></div>
+      <div class="btnrow">
+        <button id="resetMap">Reset mapping</button>
+      </div>
+    </div>
+    <div class="group">
+      <h2>Diagnostics</h2>
+      <div class="field"><label for="setShowRaw">Show raw controller values<em>Live axis and button readout, for checking what actually moves</em></label>
+        <input type="checkbox" id="setShowRaw"></div>
+      <pre id="rawInput" hidden></pre>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-ports" data-panel="ports" hidden>
+    <p class="note">The hub reports its built-in motors on connect. On the Porsche and the Lamborghini these are ports 50 and 51 (wheels), 52 (steering) and 53 (headlights) — the two wheel motors are built facing each other, so one of them runs inverted.</p>
+    <div class="tablecard">
+      <table><thead><tr><th>Port</th><th>Device</th><th>Role</th><th>Invert</th><th></th></tr></thead>
+      <tbody id="portRows"><tr><td colspan="5" class="num">Nothing detected yet.</td></tr></tbody></table>
+    </div>
+    <div class="btnrow">
+      <button id="btnKnownLayout">Apply known 42176 / 42214 layout</button>
+      <button id="btnClearPorts">Clear assignments</button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-config" data-panel="config" hidden>
+    <div class="group">
+      <h2>Driving</h2>
+      <div class="field"><label for="setMaxPower">Power limit<em>Start low. 100% is quick enough to hurt the gears on a hard stop.</em></label>
+        <input type="range" id="setMaxPower" min="20" max="100" step="5"><output id="outMaxPower"></output></div>
+      <div class="field"><label for="setTurnAssist">Turn assist<em>Slows the inner wheel while steering, so the car actually turns</em></label>
+        <input type="range" id="setTurnAssist" min="0" max="80" step="5"><output id="outTurnAssist"></output></div>
+      <div class="field"><label for="setSteerTorque">Steering force<em>Torque against the mechanical end stops</em></label>
+        <input type="range" id="setSteerTorque" min="20" max="100" step="5"><output id="outSteerTorque"></output></div>
+      <div class="field"><label for="setSteerHold">Ease off when held<em>Halves the force 0.4 s after the steering stops moving</em></label>
+        <input type="checkbox" id="setSteerHold"></div>
+    </div>
+    <div class="group">
+      <h2>Direction</h2>
+      <div class="field"><label for="setInvertDrive">Reverse drive direction</label><input type="checkbox" id="setInvertDrive"></div>
+      <div class="field"><label for="setInvertSteer">Reverse steering direction</label><input type="checkbox" id="setInvertSteer"></div>
+      <div class="field"><label for="setSwapSides">Swap left and right wheel<em>Use if the car turns the wrong way into corners</em></label>
+        <input type="checkbox" id="setSwapSides"></div>
+    </div>
+    <div class="group">
+      <h2>Hub</h2>
+      <div class="field"><label for="setLightBrightness">Light brightness</label>
+        <input type="range" id="setLightBrightness" min="10" max="100" step="5"><output id="outLightBrightness"></output></div>
+      <div class="field"><label for="setHubColour">Hub button colour</label>
+        <select id="setHubColour">
+          <option value="-1">Leave alone</option><option value="0">Off</option><option value="1">Pink</option>
+          <option value="3">Blue</option><option value="6">Green</option><option value="7">Yellow</option>
+          <option value="8">Orange</option><option value="9">Red</option><option value="10">White</option>
+        </select></div>
+      <div class="field"><label for="setWithResponse">Wait for write acknowledgement<em>Turn off if commands are accepted but nothing moves</em></label>
+        <input type="checkbox" id="setWithResponse"></div>
+      <div class="field"><label for="setAutoReconnect">Reconnect automatically</label><input type="checkbox" id="setAutoReconnect"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-log" data-panel="log" hidden>
+    <div class="btnrow">
+      <button id="btnHubInfo">Hub info</button>
+      <button id="btnCopyLog">Copy log</button>
+      <button id="btnClearLog">Clear log</button>
+    </div>
+    <div id="log"></div>
+    <p class="note" id="txStats">Sent 0 · failed 0</p>
+    <div class="group">
+      <h2>Logging</h2>
+      <div class="field"><label for="setHexLog">Log every packet as hex</label><input type="checkbox" id="setHexLog"></div>
+    </div>
+    <p class="note">For sets 42176, 42214 and 42239. Not affiliated with the LEGO Group. LEGO® is a trademark of the LEGO Group.</p>
+  </section>
+
+</main>
+
+
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

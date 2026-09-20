@@ -1,12 +1,27 @@
 # OS related
 .DS_Store
 
+# Build
+node_modules/
+dist/
+tasks/
+
 # Software, apps and editor files
 .idea/
 .obsidian/
+.impeccable/
+
+# Design
+DESIGN.md
+PRODUCT.md
 
 # AI related
 .claude/
 .copilot/
 .opencode/
+.mcp.json
+
+AGENTS.md
+CLAUDE.md
+
 
