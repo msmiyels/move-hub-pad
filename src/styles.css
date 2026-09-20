@@ -93,43 +93,33 @@ a:hover{color:var(--link)}
 
 /* ---------- panels ---------- */
 .panels{flex:1;min-height:0;position:relative}
-.panel{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 16px}
+.panel{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0 max(16px, env(safe-area-inset-bottom,16px))}
+.panel > :first-child{margin-top:0}
 .panel[hidden]{display:none}
 
 /* ---------- tabs ---------- */
-/* phone: label row along the bottom; wider: a strip under the header.
-   Selection is a 2px white rule — no fill, no radius. */
+/* one strip under the header at every width; selection is a 2px white
+   rule on the bottom edge — no fill, no radius. */
 .switcher{
   flex:none;display:flex;
-  margin:0 -16px;
-  padding:0 8px env(safe-area-inset-bottom,0px);
-  background:var(--black);
-  border-top:1px solid var(--charcoal);
+  margin:0 0 20px;
+  border-bottom:1px solid var(--charcoal);
 }
 .switcher button{
-  flex:1 1 0;min-width:0;min-height:50px;
-  font:inherit;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);
+  flex:1 1 0;min-width:0;min-height:44px;
+  font:inherit;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);
   background:transparent;border:none;border-radius:0;
-  padding:8px 2px;cursor:pointer;touch-action:manipulation;
-  box-shadow:inset 0 2px 0 transparent;
+  padding:10px 8px;cursor:pointer;touch-action:manipulation;
+  box-shadow:inset 0 -2px 0 transparent;
   transition:color .12s var(--ease),box-shadow .12s var(--ease);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 @media (hover:hover){ .switcher button:not([aria-selected="true"]):hover{color:var(--white);background:transparent;border-color:transparent} }
-.switcher button[aria-selected="true"]{color:var(--white);box-shadow:inset 0 2px 0 var(--white)}
+.switcher button[aria-selected="true"]{color:var(--white);box-shadow:inset 0 -2px 0 var(--white)}
 .switcher button:active{opacity:1}
 
-@media (min-width:600px){
-  .wrap > .strip{order:0}
-  .wrap > .switcher{order:1}
-  .wrap > .panels{order:2}
-  .switcher{margin:0 0 20px;padding:0;border-top:none;border-bottom:1px solid var(--charcoal)}
-  .switcher button{min-height:44px;padding:10px 8px;font-size:12px;box-shadow:inset 0 -2px 0 transparent}
-  .switcher button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--white)}
-}
-
 /* ---------- drive ---------- */
-.cluster{margin:2px 0 24px}
+.cluster{margin:0 0 24px}
 .state{font-size:22px;font-weight:400;line-height:1.15;letter-spacing:.02em;text-transform:uppercase;margin:0 0 18px;display:flex;flex-direction:column;gap:6px;color:var(--white)}
 .state small{font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;line-height:1.5;color:var(--ash)}
 .state.lock{color:var(--gold-text)}
@@ -169,8 +159,14 @@ button.stop{background:var(--stop);border-color:var(--stop);color:var(--white);f
 @media (min-width:560px){ .actions{grid-template-columns:repeat(4,1fr)} }
 
 /* ---------- settings: rows on black, charcoal rules ---------- */
-.group{border-top:1px solid var(--shadow);margin:20px 0 24px}
+/* A group opens with an eyebrow heading on a shadow rule and closes without
+   one, so two rules never sit next to each other. */
+.group{margin:24px 0 28px}
+.group h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ash);margin:0;padding:0 0 8px;border-bottom:1px solid var(--shadow)}
+.group .note{margin:10px 0 0}
+.group .btnrow{margin:12px 0 0}
 .field{display:flex;align-items:center;gap:14px;padding:12px 0;min-height:52px;border-bottom:1px solid var(--charcoal)}
+.group .field:not(:has(~ .field)){border-bottom:none}
 .field label{flex:1;font-size:15px;color:var(--white)}
 .field label em{display:block;font-style:normal;font-size:13px;color:var(--ash);line-height:1.45;margin-top:2px}
 .field output{min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ash);font-size:13px}
@@ -223,7 +219,7 @@ select:focus{border-color:var(--white);outline:none}
 @media (hover:none){ .note.kbd{display:none} }
 
 /* ---------- ports table ---------- */
-.tablecard{margin-top:14px;border-top:1px solid var(--shadow)}
+.tablecard{margin-top:14px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--charcoal);vertical-align:middle}
 th{color:var(--ash);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase}

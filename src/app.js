@@ -544,7 +544,13 @@ function readInput(pad){
 /* --- teaching an input ------------------------------------------- */
 function startLearning(target, label){
   const pad = currentGamepad();
-  if(!pad){ log('No controller detected — press a button on it first.', 'bad'); return; }
+  if(!pad){
+    log('No controller detected — press a button on it first.', 'bad');
+    $('map' + cap(target)).textContent = 'No controller';
+    setTimeout(describeMapping, 2000);
+    return;
+  }
+  setTeachButton(target, true);
   const isButtonOnly = (target === 'lights' || target === 'stop' || target === 'handbrake');
   learning = {
     target, label, isButtonOnly, until: performance.now() + 3000,
@@ -587,6 +593,7 @@ function stepLearning(pad){
 
   const target = learning.target, label = learning.label;
   learning = null;
+  setTeachButton(target, false);
 
   if(!best || best.range < 0.3){
     log('Nothing moved far enough — mapping for ' + label + ' left unchanged.', 'bad');
@@ -764,19 +771,18 @@ function updateTxStats(){
   $('txStats').textContent = 'Sent ' + tx.sent + ' · failed ' + tx.failed;
 }
 
+const cap = text => text[0].toUpperCase() + text.slice(1);
 function describeMapping(){
   const describe = (binding) => binding ? binding.kind + ' ' + binding.index : '—';
-  const triggers = 'Throttle: ' + describe(S.map.throttle) + ' · Reverse: ' + describe(S.map.brake);
-  const stick = 'Drive: ' + describe(S.map.drive);
-  const drive = S.throttleMode === 'stick' ? stick
-    : S.throttleMode === 'both' ? stick + ' · ' + triggers
-    : triggers;
-  $('mapInfo').textContent =
-    drive +
-    ' · Steering: ' + describe(S.map.steer) +
-    ' · Brake: button ' + S.map.handbrake.index +
-    ' · Lights: button ' + S.map.lights.index +
-    ' · Stop: button ' + S.map.stop.index;
+  for(const target of Object.keys(S.map)){
+    const output = $('map' + cap(target));
+    if(output) output.textContent = describe(S.map[target]);
+  }
+}
+function setTeachButton(target, active){
+  const button = $('learn' + cap(target));
+  button.disabled = active;
+  button.textContent = active ? 'Move it…' : 'Teach';
 }
 
 function renderPorts(){
