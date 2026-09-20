@@ -8,14 +8,14 @@ No app. No account. No firmware. No install.
 </div>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Language-JavaScript?style=flat&label=Language&color=F7DF1E" alt="Language" />
-  <img src="https://img.shields.io/badge/Platform-Web%20Bluetooth?style=flat&label=Platform&color=7FB2E5" alt="Web Bluetooth" />
-  <img src="https://img.shields.io/badge/Build-Vite?style=flat&label=Build&color=2454E0" alt="Vite build" />
-  <img src="https://img.shields.io/website?url=https%3A%2F%2Fmsmiyels.github.io%2Fmove-hub-pad%2F&up_color=79B143&down_color=DC3B3B&logo=github&label=GitHub%20Pages&up_message=Online&down_message=Offline" alt="GitHub Pages status" />
+  <img src="https://img.shields.io/badge/Language-JavaScript-F7DF1E?style=flat" alt="Language" />
+  <img src="https://img.shields.io/badge/Platform-Web%20Bluetooth-7FB2E5?style=flat" alt="Web Bluetooth" />
+  <img src="https://img.shields.io/badge/Build-Vite-2454E0?style=flat" alt="Vite build" />
+  <a href="https://msmiyels.github.io/move-hub-pad/">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fmsmiyels.github.io%2Fmove-hub-pad%2F&up_color=79B143&down_color=DC3B3B&logo=github&label=GitHub%20Pages&up_message=Online&down_message=Offline" alt="GitHub Pages status" />
+  </a>
   <img src="https://img.shields.io/badge/License-MIT-0056CC?style=flat" alt="MIT License" />
 </p>
-
-<p align="center"><strong><a href="https://msmiyels.github.io/move-hub-pad/">→ Try live</a></strong></p>
 
 ### Browser support
 
@@ -40,6 +40,12 @@ The hub still speaks plain **LEGO Wireless Protocol v3 over Bluetooth Low Energy
 - **Drive anywhere**: on the floor or across the room, not chained to a desk
 - **Safety first**: nothing moves until every control is at rest; emergency stop on screen, button and space bar
 
+### How it looks
+
+<p align="center">
+    <img src="webapp-v1.0.1.png" width="720" alt="Mobile WebApp example" />
+</p>
+
 ## Compatibility
 
 Move Hub Pad talks to any hub reporting **hub type `0x84`** (the Technic Move Hub), built into these sets:
@@ -54,8 +60,6 @@ The wheel, steering and headlight ports should be identical across all three (sa
 
 ## Quick start: drive it now
 
-The page is already live: **https://msmiyels.github.io/move-hub-pad/**
-
 1. Pair the controller with your phone / tablet / computer the usual way, in Bluetooth settings.
 2. Open the page and **press one button on the controller**. Browsers hide a gamepad until it sends its first input.
 3. Press the green button on the hub so it blinks, then tap **Connect hub** and pick it from the list.
@@ -68,12 +72,6 @@ browser. It's the only route. Android, Windows, macOS, Linux: Chrome or Edge.
 
 **Keep the tab active:** the browser window needs focus and the tab needs to stay visible while
 driving. Switching apps, locking the screen or hiding the tab stops the car immediately, see [Safety](#safety).
-
-### How it looks
-
-<p align="center">
-    <img src="webapp-v1.0.1.png" width="720" alt="Mobile WebApp example" />
-</p>
 
 ### Controls
 
