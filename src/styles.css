@@ -2,7 +2,8 @@
    from surface steps (#000 → #181818 → #202020), never from shadows.
    Zero radius everywhere except the switch. Uppercase, weight 400.
    Cyan is the informational accent (live state, active tab, slider);
-   red exists for one reason only - the STOP control. */
+   red is reserved for urgent states: the STOP control and critical
+   battery. Amber marks the battery-low step in between. */
 @font-face{
   font-family:"Archivo";
   src:url("./fonts/Archivo-Variable-latin.woff2") format("woff2");
@@ -31,8 +32,9 @@
   --cyan:#29abe2;                 /* informational accent */
   --teal:#1eaedb;                 /* ghost hover */
   --link:#3860be;
+  --amber:#f59e0b;                 /* battery low */
 
-  --stop:#e10600;                 /* the one exception: emergency stop */
+  --stop:#e10600;                 /* emergency stop, critical battery */
   --stop-dark:#a50400;
 
   --ease:cubic-bezier(.16,1,.3,1);
@@ -88,6 +90,8 @@ a:hover{color:var(--link)}
 .pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pill.warn{color:var(--steel);border-color:var(--ghost-line)}
 .pill.on{color:var(--black);background:var(--cyan);border-color:var(--cyan)}
+.pill.low{color:var(--black);background:var(--amber);border-color:var(--amber)}
+.pill.crit{color:var(--white);background:var(--stop);border-color:var(--stop)}
 
 /* panels */
 .panels{flex:1;min-height:0;position:relative}

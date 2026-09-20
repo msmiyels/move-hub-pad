@@ -731,7 +731,10 @@ function refreshUI(){
     : 'Hub offline';
 
   const battery = $('pillBat');
-  battery.className = 'pill' + (hub.battery == null ? ' warn' : (hub.battery < 20 ? ' warn' : ' on'));
+  battery.className = 'pill' + (hub.battery == null ? ' warn'
+    : hub.battery <= 10 ? ' crit'
+    : hub.battery <= 20 ? ' low'
+    : ' on');
   battery.querySelector('span').textContent = hub.battery == null ? 'Battery -' : 'Battery ' + hub.battery + '%';
 
   $('btnConnect').disabled = hub.connected;
