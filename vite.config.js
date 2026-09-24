@@ -12,7 +12,7 @@ const seoHead = () => ({
     if (!html.includes(SEO_MARKER)) {
       throw new Error(`seo-head: marker "${SEO_MARKER}" not found in index.html`);
     }
-    const head = readFileSync(new URL('./seo/head.html', import.meta.url), 'utf8');
+    const head = readFileSync(new URL('./src/seo/head.html', import.meta.url), 'utf8');
     return html.replace(SEO_MARKER, head.trim());
   }
 });
