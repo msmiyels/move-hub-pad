@@ -43,7 +43,7 @@ The hub still speaks plain **LEGO Wireless Protocol v3 over Bluetooth Low Energy
 ### How it looks
 
 <p align="center">
-    <img src="webapp-v1.0.1.png" width="720" alt="Mobile WebApp example" />
+    <img src="/src/public/social-preview.png" width="720" alt="Mobile WebApp example" />
 </p>
 
 ## Compatibility

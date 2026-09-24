@@ -3,6 +3,31 @@
   "private": true,
   "version": "1.0.1",
   "type": "module",
+  "description": "Browser-based gamepad control for LEGO Technic Move Hubs via Web Bluetooth",
+  "keywords": [
+    "lego",
+    "lego-technic",
+    "technic-move-hub",
+    "powered-up",
+    "lego-wireless-protocol",
+    "lwp3",
+    "web-bluetooth",
+    "bluetooth-low-energy",
+    "gamepad",
+    "gamepad-api",
+    "dualsense",
+    "ps5"
+  ],
+  "homepage": "https://msmiyels.github.io/move-hub-pad/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msmiyels/move-hub-pad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/msmiyels/move-hub-pad/issues"
+  },
+  "author": "miyels (https://github.com/msmiyels)",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
