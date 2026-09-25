@@ -8,6 +8,7 @@ tasks/
 assets/
 docs/
 laboratory/
+wiki/
 
 # Software, apps and editor files
 .idea/
