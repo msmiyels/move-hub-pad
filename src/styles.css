@@ -1,45 +1,4 @@
-/* Lamborghini: absolute black, white type, one gold CTA. Depth comes
-   from surface steps (#000 → #181818 → #202020), never from shadows.
-   Zero radius everywhere except the switch. Uppercase, weight 400.
-   Cyan is the informational accent (live state, active tab, slider);
-   red is reserved for urgent states: the STOP control and critical
-   battery. Amber marks the battery-low step in between. */
-@font-face{
-  font-family:"Archivo";
-  src:url("./fonts/Archivo-Variable-latin.woff2") format("woff2");
-  font-weight:100 900;
-  font-stretch:62% 125%;
-  font-display:swap;
-}
-
-:root{
-  color-scheme: dark;
-
-  --black:#000000;
-  --iron:#181818;                 /* tracks, log, inputs */
-  --charcoal:#202020;             /* dividers, elevated panels */
-  --shadow:#313131;
-  --graphite:#494949;
-  --ash:#7d7d7d;                  /* body / muted text */
-  --steel:#969696;                /* disabled, subtle labels, neutral badge */
-  --white:#ffffff;
-  --smoke:#f5f5f5;
-  --ghost-line: rgba(255,255,255,.5);
-
-  --gold:#ffc000;                 /* primary CTA only */
-  --gold-dark:#917300;
-  --gold-text:#ffce3e;
-  --cyan:#29abe2;                 /* informational accent */
-  --teal:#1eaedb;                 /* ghost hover */
-  --link:#3860be;
-  --amber:#f59e0b;                 /* battery low */
-
-  --stop:#e10600;                 /* emergency stop, critical battery */
-  --stop-dark:#a50400;
-
-  --ease:cubic-bezier(.16,1,.3,1);
-  box-sizing:border-box;
-}
+@import "./tokens.css";
 
 *,*::before,*::after{box-sizing:inherit}
 
@@ -219,6 +178,8 @@ select:focus{border-color:var(--white);outline:none}
 .btnrow button{padding:8px 16px;min-height:40px;font-size:12px;letter-spacing:.12em}
 .note{font-size:13px;color:var(--ash);margin:12px 0 0;line-height:1.55}
 @media (hover:none){ .note.kbd{display:none} }
+/* license and disclaimer, set apart like on the guide page */
+.legal{margin-top:20px;padding-top:4px;border-top:1px solid var(--charcoal)}
 
 /* ports table */
 .tablecard{margin-top:14px}
