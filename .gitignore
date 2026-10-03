@@ -8,6 +8,7 @@ tasks/
 assets/
 docs/
 laboratory/
+teaser/
 wiki/
 
 # Software, apps and editor files
@@ -22,6 +23,8 @@ PRODUCT.md
 # AI related
 .claude/
 .copilot/
+.agents/
+skills-lock.json
 .opencode/
 .mcp.json
 
