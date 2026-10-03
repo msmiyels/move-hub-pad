@@ -146,7 +146,7 @@ Every set with the Technic Move Hub (88019, hub type `0x84`): 42176 Porsche GT4 
 
 ### Which controllers work?
 
-Tested with the PS5 DualSense. Other gamepads the browser reports should work too; unusual ones can be taught in the Pad tab.
+Tested with the PS5 DualSense. Other controllers your browser detects should work too; unusual ones can be taught in the Pad tab.
 
 ### Do I need to install an app or change the hub's firmware?
 
