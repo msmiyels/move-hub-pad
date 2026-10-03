@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.2",
   "type": "module",
-  "description": "Browser-based gamepad control for LEGO Technic Move Hubs via Web Bluetooth",
+  "description": "Browser-based gamepad controller for the LEGO® Technic Move Hub (88019) via Web Bluetooth",
   "keywords": [
     "lego",
     "lego-technic",

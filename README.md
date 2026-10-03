@@ -2,8 +2,8 @@
 
 # Move Hub Pad
 
-Drive your LEGO® Technic Move Hub with a real game controller, right from a browser tab.
-No app. No account. No firmware. No install.
+Gamepad controller for the LEGO® Technic Move Hub. Drive with a real game controller, right from a browser tab. Works with the Porsche GT4 e-Performance (42176), the Lamborghini Revuelto (42214) and the Batmobile Tumbler (42239). Tested with the PS5 DualSense.
+No app. No account. No firmware. No install. 
 
 </div>
 
@@ -35,7 +35,7 @@ The hub still speaks plain **LEGO Wireless Protocol v3 over Bluetooth Low Energy
 
 ### What you get
 
-- **Gamepad driving**: PlayStation DualSense, Xbox Wireless, or any pad your browser reports
+- **Gamepad driving**: PlayStation 5 DualSense (tested), or any other controller your browser detects
 - **Full manual control**: steering, throttle, reverse, brake, headlights, mapped the way you want
 - **Drive anywhere**: on the floor or across the room, not chained to a desk
 - **Safety first**: nothing moves until every control is at rest; emergency stop on screen, button and space bar
@@ -48,13 +48,13 @@ The hub still speaks plain **LEGO Wireless Protocol v3 over Bluetooth Low Energy
 
 ## Compatibility
 
-Move Hub Pad talks to any hub reporting **hub type `0x84`** (the Technic Move Hub), built into these sets:
+Move Hub Pad talks to any hub reporting **hub type `0x84`**, the **Technic Move Hub (88019)**, built into these sets:
 
-| Set | Model | Tested |
-|---|---|---|
-| 42176 | Porsche GT4 e-Performance | Not yet. Port layout from community sources, should match 42214. |
-| 42214 | Lamborghini Revuelto | Yes, in regular use. |
-| 42239 | Batmobile Tumbler | Not yet. Port layout from community sources, should match 42214. |
+| Set   | Model                                  | Tested                                                           |
+| ----- | -------------------------------------- | ---------------------------------------------------------------- |
+| 42176 | Porsche GT4 e-Performance Race Car     | Not yet. Port layout from community sources, should match 42214. |
+| 42214 | Lamborghini Revuelto Super Sports Car  | Yes, in regular use.                                             |
+| 42239 | Batmobile Tumbler                      | Not yet. Port layout from community sources, should match 42214. |
 
 The wheel, steering and headlight ports should be identical across all three (same hub, same motor set), but only 42214 has actually been driven with this project so far. If you have a 42176 or 42239, an issue or PR saying whether it worked closes that gap for everyone else.
 
@@ -129,6 +129,36 @@ Move Hub Pad drives the motors directly instead of going through the hub's own d
 
 Do **not** pair the hub in the OS Bluetooth settings. Powered Up hubs connect from the browser's
 device picker only; the "pair" button there just grants the page access.
+
+## FAQ
+
+### How do I use a controller with the LEGO Technic Move Hub?
+
+Pair a Bluetooth gamepad (tested: PS5 DualSense) with your phone, tablet or computer, open [Move Hub Pad](https://msmiyels.github.io/move-hub-pad/) in Chrome or Edge (Bluefy on iPhone and iPad), press a button on the controller, then connect the hub. Step by step in [Quick start](#quick-start-drive-it-now) or in the [guide](https://msmiyels.github.io/move-hub-pad/guide/).
+
+### Does the LEGO CONTROL+ app support gamepads?
+
+No, CONTROL+ has no gamepad support. Move Hub Pad talks to the hub directly over Web Bluetooth instead. Only one app can hold the hub's Bluetooth connection at a time, so close CONTROL+ first.
+
+### Which LEGO Technic sets work?
+
+Every set with the Technic Move Hub (88019, hub type `0x84`): 42176 Porsche GT4 e-Performance Race Car, 42214 Lamborghini Revuelto Super Sports Car and 42239 Batmobile Tumbler. Only 42214 is tested so far, see [Compatibility](#compatibility).
+
+### Which controllers work?
+
+Tested with the PS5 DualSense. Other gamepads the browser reports should work too; unusual ones can be taught in the Pad tab.
+
+### Do I need to install an app or change the hub's firmware?
+
+No. Nothing is installed on your device or on the hub, everything runs in a browser tab.
+
+### Is this for the LEGO BOOST Move Hub?
+
+No. The BOOST Move Hub (88006) is a different, older hub. Move Hub Pad is made for the Technic Move Hub (88019).
+
+### Can I use Pybricks instead?
+
+Not on this hub: its firmware is password-locked, so Pybricks cannot be installed.
 
 ## Troubleshooting
 
